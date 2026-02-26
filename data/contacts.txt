@@ -1,0 +1,27 @@
+Category: Faridabad
+Label: Head Office
+Phone: +91 98765 43210
+Email: info@komalguptamakeup.com
+Address: Sector 15, Faridabad, Haryana, India
+Notes: 
+
+Category: Badaun
+Label: Badaun UP
+Phone: +91 98765 43211
+Email: badaun@komalguptamakeup.com
+Address: Civil Lines, Badaun, Uttar Pradesh, India
+Notes: 
+
+Category: General
+Label: General Enquiries
+Phone: 
+Email: hello@komalguptamakeup.com
+Address: 
+Notes: Mon–Sat 10:00 AM – 7:00 PM
+
+Category: Sitarganj
+Label: Uttarakhand UP
+Phone: +98654785621
+Email: mansi@test.com
+Address: Boring wali gali- meena baazar
+Notes: Mon–Sat 10:00 AM – 7:00 PM

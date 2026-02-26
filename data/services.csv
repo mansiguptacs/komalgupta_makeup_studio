@@ -1,0 +1,27 @@
+service_id,category,name,price,duration_minutes,rating
+1,Makeup,Party Makeup,2500,60,4.5
+2,Makeup,Bridal Makeup,15000,180,4.8
+3,Makeup,Engagement Makeup,8000,120,4.6
+4,Eyebrow,Eyebrow Threading,50,15,4.2
+5,Eyebrow,Upper Lip Threading,30,10,4.1
+6,Haircut,Basic Haircut,300,30,4.3
+7,Haircut,Layered Haircut,600,45,4.4
+8,Haircut,Step Cut,500,45,4.2
+9,Hair Services,Hair Spa,1200,60,4.5
+10,Hair Services,Keratin Treatment,4000,120,4.7
+11,Hair Services,Hair Coloring (Global),3000,90,4.6
+12,Skin Treatments,Clean Up,500,30,4.3
+13,Skin Treatments,Fruit Facial,800,45,4.4
+14,Skin Treatments,O3+ Facial,2000,60,4.6
+15,Skin Treatments,De-Tan Pack,400,20,4.2
+16,Nail,Basic Manicure,400,30,4.1
+17,Nail,Basic Pedicure,500,40,4.3
+18,Nail,Nail Art (Per Finger),100,15,4.0
+19,Nail,Gel Nail Polish,800,45,4.2
+20,Mehndi,Basic Mehndi,500,30,4.1
+21,Mehndi,Bridal Mehndi,5000,180,4.5
+22,Bridal Services,Pre-Bridal Package (Basic),5000,240,4.6
+23,Bridal Services,Pre-Bridal Package (Premium),10000,360,4.8
+24,Other,Saree Plating / Draping,300,20,4.0
+25,Other,Waxing (Full Arms),250,20,4.1
+26,Other,Waxing (Full Legs),400,30,4.2
