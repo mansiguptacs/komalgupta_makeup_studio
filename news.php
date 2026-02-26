@@ -41,4 +41,4 @@ usort($news_items, function ($a, $b) {
         <?php endif; ?>
     </div>
 </section>
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/footer.html'; ?>

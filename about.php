@@ -10,4 +10,4 @@ require_once __DIR__ . '/includes/header.php';
         <p>Our team is trained in bridal makeup, party looks, skincare, and everyday glam. We believe in personalized care and lasting results that make you feel confident.</p>
     </div>
 </section>
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/footer.html'; ?>

@@ -71,4 +71,4 @@ if (file_exists($contacts_file) && is_readable($contacts_file)) {
         <?php endif; ?>
     </div>
 </section>
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/footer.html'; ?>
