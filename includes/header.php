@@ -8,6 +8,8 @@ if (empty($current_page)) {
     $current_page = 'index';
 }
 $page_title = isset($page_title) ? $page_title : 'Komal Gupta Makeup Studio';
+// When included from secure/, links must go up one level
+$base = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/secure/') !== false) ? '../' : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,23 +20,24 @@ $page_title = isset($page_title) ? $page_title : 'Komal Gupta Makeup Studio';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo $base; ?>assets/css/style.css">
 </head>
 <body>
     <header class="site-header">
         <div class="container header-inner">
-            <a href="index.php" class="logo">
+            <a href="<?php echo $base; ?>index.php" class="logo">
                 <span class="logo-letters">KG</span>
                 <span class="logo-text">Komal Gupta Makeup Studio</span>
             </a>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="index.php" class="<?php echo $current_page === 'index' ? 'active' : ''; ?>">Home</a></li>
-                    <li><a href="about.php" class="<?php echo $current_page === 'about' ? 'active' : ''; ?>">About</a></li>
-                    <li><a href="services.php" class="<?php echo $current_page === 'services' ? 'active' : ''; ?>">Products &amp; Services</a></li>
-                    <li><a href="appointments.php" class="<?php echo $current_page === 'appointments' ? 'active' : ''; ?>">Book Appointment</a></li>
-                    <li><a href="news.php" class="<?php echo $current_page === 'news' ? 'active' : ''; ?>">News</a></li>
-                    <li><a href="contact.php" class="<?php echo $current_page === 'contact' ? 'active' : ''; ?>">Contact</a></li>
+                    <li><a href="<?php echo $base; ?>index.php" class="<?php echo $current_page === 'index' ? 'active' : ''; ?>">Home</a></li>
+                    <li><a href="<?php echo $base; ?>about.php" class="<?php echo $current_page === 'about' ? 'active' : ''; ?>">About</a></li>
+                    <li><a href="<?php echo $base; ?>services.php" class="<?php echo $current_page === 'services' ? 'active' : ''; ?>">Products &amp; Services</a></li>
+                    <li><a href="<?php echo $base; ?>appointments.php" class="<?php echo $current_page === 'appointments' ? 'active' : ''; ?>">Book Appointment</a></li>
+                    <li><a href="<?php echo $base; ?>news.php" class="<?php echo $current_page === 'news' ? 'active' : ''; ?>">News</a></li>
+                    <li><a href="<?php echo $base; ?>contact.php" class="<?php echo $current_page === 'contact' ? 'active' : ''; ?>">Contact</a></li>
+                    <li><a href="<?php echo $base; ?>secure/users.php" class="<?php echo $current_page === 'users' ? 'active' : ''; ?>">Admin</a></li>
                 </ul>
             </nav>
         </div>
