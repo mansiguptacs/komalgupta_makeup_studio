@@ -3,7 +3,7 @@ $page_title = 'Book Appointment';
 require_once __DIR__ . '/includes/header.php';
 
 // Single studio location
-$studio_location = 'Faridabad (Sector 15)';
+$studio_location = 'Civil Lines, Badaun, Uttar Pradesh';
 ?>
 <section class="page-section">
     <div class="container">

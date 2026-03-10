@@ -27,7 +27,7 @@ if (file_exists($contacts_file) && is_readable($contacts_file)) {
 <section class="page-section">
     <div class="container">
         <h1>Contact Us</h1>
-        <p>Reach out to us at any of our locations.</p>
+        <p>Reach out to us at our Civil Lines, Badaun studio.</p>
 
         <?php if (!empty($contacts)): ?>
             <div class="contacts-grid">

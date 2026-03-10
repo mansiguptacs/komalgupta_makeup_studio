@@ -30,7 +30,8 @@ usort($apps, function($a, $b) {
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
             <h1>Appointment Requests</h1>
             <div>
-                <a href="users.php" class="btn btn-secondary" style="margin-right: 10px;">Back to Users List</a>
+                <a href="analytics.php" class="btn btn-secondary" style="margin-right: 8px;">Analytics</a>
+                <a href="users.php" class="btn btn-secondary" style="margin-right: 8px;">Users List</a>
                 <a href="../api/logout.php" class="btn btn-secondary">Sign Out</a>
             </div>
         </div>

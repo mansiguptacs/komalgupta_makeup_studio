@@ -25,7 +25,8 @@ if (is_readable($usersFile)) {
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
             <h1>Current Website Users</h1>
             <div>
-                <a href="appointments.php" class="btn btn-secondary" style="margin-right: 10px;">View Appointments</a>
+                <a href="analytics.php" class="btn btn-secondary" style="margin-right: 8px;">Analytics</a>
+                <a href="appointments.php" class="btn btn-secondary" style="margin-right: 8px;">Appointments</a>
                 <a href="../api/logout.php" class="btn btn-secondary">Sign Out</a>
             </div>
         </div>

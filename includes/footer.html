@@ -2,7 +2,15 @@
     <footer class="site-footer">
         <div class="container">
             <p class="footer-brand">KG — Komal Gupta Makeup Studio</p>
-            <p class="footer-locations">Faridabad &bull; Badaun, UP, India</p>
+            <p class="footer-locations">Civil Lines, Badaun, Uttar Pradesh, India</p>
+            <div class="footer-subscribe" style="margin: 1.25rem 0; padding: 1rem; background: rgba(255,255,255,0.06); border-radius: 8px; max-width: 28rem; margin-left: auto; margin-right: auto;">
+                <p style="margin: 0 0 0.5rem; font-weight: 600;">Subscribe for updates &amp; offers</p>
+                <form id="subscribe-form" class="subscribe-inline" style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
+                    <input type="email" name="email" required placeholder="Your email" style="flex: 1; min-width: 180px; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.2); color: #fff;">
+                    <button type="submit" class="btn btn-primary" style="margin: 0;">Subscribe</button>
+                </form>
+                <p id="subscribe-msg" class="message" style="display:none; margin-top: 0.75rem; text-align: center;"></p>
+            </div>
             <div class="social-links" style="margin: 15px 0;">
                 <a href="https://instagram.com/komalgupta_makeupstudiosalon" target="_blank" style="color: #e0dcd8; text-decoration: none; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 8px;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -12,6 +20,29 @@
                 </a>
             </div>
             <p class="footer-copy">&copy; <?php echo date('Y'); ?> Komal Gupta Makeup Studio. All rights reserved.</p>
+            <script>
+            (function(){
+                var apiBase = '<?php echo isset($base) ? htmlspecialchars($base, ENT_QUOTES) : ''; ?>';
+                var f = document.getElementById('subscribe-form');
+                if (f) f.addEventListener('submit', function(e){
+                    e.preventDefault();
+                    var email = f.querySelector('input[name=email]').value.trim();
+                    var msg = document.getElementById('subscribe-msg');
+                    fetch(apiBase + 'api/subscribe.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) })
+                    .then(function(r){ return r.json(); })
+                    .then(function(d){
+                        msg.style.display = 'block';
+                        msg.className = 'message ' + (d.success ? 'success' : 'error');
+                        msg.style.background = d.success ? '#1b5e20' : '#b71c1c';
+                        msg.style.border = 'none';
+                        msg.textContent = d.message || (d.success ? 'Thanks for subscribing!' : d.error || 'Error.');
+                        if (d.success) f.querySelector('input[name=email]').value = '';
+                    }).catch(function(){ msg.style.display='block'; msg.style.background='#b71c1c'; msg.textContent='Could not subscribe.'; });
+                });
+                var path = window.location.pathname || '/';
+                fetch(apiBase + 'api/track.php?page=' + encodeURIComponent(path), { method: 'GET', credentials: 'same-origin' }).catch(function(){});
+            })();
+            </script>
         </div>
     </footer>
 </body>

@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'name' => trim($data['name'] ?? ''),
             'email' => trim($data['email'] ?? ''),
             'phone' => trim($data['phone'] ?? ''),
-            'location' => trim($data['location'] ?? 'Faridabad (Sector 15)') ?: 'Faridabad (Sector 15)',
+            'location' => trim($data['location'] ?? 'Civil Lines, Badaun, Uttar Pradesh') ?: 'Civil Lines, Badaun, Uttar Pradesh',
             'date' => trim($data['date'] ?? ''),
             'service' => trim($data['service'] ?? ''),
             'message' => trim($data['message'] ?? ''),

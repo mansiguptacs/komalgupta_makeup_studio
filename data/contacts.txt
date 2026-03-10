@@ -1,14 +1,7 @@
-Category: Faridabad
-Label: Head Office
+Category: Badaun
+Label: KG Makeup Studio
 Phone: +91 98765 43210
 Email: info@komalguptamakeup.com
-Address: Sector 15, Faridabad, Haryana, India
-Notes: 
-
-Category: Badaun
-Label: Badaun UP
-Phone: +91 98765 43211
-Email: badaun@komalguptamakeup.com
 Address: Civil Lines, Badaun, Uttar Pradesh, India
 Notes: 
 
