@@ -66,6 +66,11 @@ require_once __DIR__ . '/includes/header.php';
         <h1>Products &amp; Services</h1>
         <p class="lead">Explore our makeup, beauty, and styling services. Click any product for full details and to book.</p>
 
+        <div class="tracking-links">
+            <a href="popular.php">Show 5 most visited products</a>
+            <a href="recent.php">Show your last 5 visited products</a>
+        </div>
+
         <!-- 1. Most Popular services -->
         <div class="services-section">
             <h2 class="services-section-title">Most popular services</h2>

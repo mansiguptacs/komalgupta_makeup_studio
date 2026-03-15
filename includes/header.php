@@ -7,7 +7,9 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
 if (empty($current_page)) {
     $current_page = 'index';
 }
-$page_title = isset($page_title) ? $page_title : 'Komal Gupta Makeup Studio';
+if (empty($page_title) || !is_string($page_title)) {
+    $page_title = 'Komal Gupta Makeup Studio';
+}
 // When included from secure/, links must go up one level
 $base = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/secure/') !== false) ? '../' : '';
 ?>
@@ -16,7 +18,7 @@ $base = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/secure/') !== false) ? '../' : 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($page_title); ?> | KG Makeup Studio</title>
+    <title><?php echo htmlspecialchars(trim($page_title)); ?> | Komal Gupta Makeup Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
