@@ -194,7 +194,7 @@ $combinedFriendUsers = array_values($combinedByEmail);
           <tr>
             <td style="padding:.75rem;"><?php echo htmlspecialchars($u['name'] ?? ''); ?></td>
             <td style="padding:.75rem;"><?php echo htmlspecialchars($u['email'] ?? ''); ?></td>
-            <td style="padding:.75rem;"><?php echo htmlspecialchars($u['joined'] ?? ''); ?></td>
+            <td style="padding:.75rem;"><?php echo htmlspecialchars($u['joined_date'] ?? $u['joined'] ?? ''); ?></td>
             <td style="padding:.75rem;"><?php echo htmlspecialchars(implode(', ', $u['sources'] ?? [])); ?></td>
           </tr>
         <?php endforeach; ?>

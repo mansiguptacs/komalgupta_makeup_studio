@@ -13,3 +13,17 @@ CREATE TABLE IF NOT EXISTS subscribers (
   subscribed_at DATETIME NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS team_members (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  photo_url VARCHAR(512) NULL,
+  designation VARCHAR(150) NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  sort_order INT UNSIGNED NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Example: INSERT INTO team_members (name, email, photo_url, designation, is_active, sort_order) VALUES
+-- ('Komal Gupta', 'hello@example.com', 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400', 'Lead Makeup Artist', 1, 0);

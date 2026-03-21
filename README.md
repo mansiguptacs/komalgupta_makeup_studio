@@ -19,6 +19,20 @@ The **Admin** area shows a document listing current website users. Access requir
 3. Login as admin and open **`admin_setup_db.php`** once — creates tables, imports `data/site_users.json` if empty, and imports `data/subscribers.json` into MySQL.
 4. New subscribers save to MySQL via `api/subscribe.php`; **Analytics** reads subscribers from MySQL when the DB connects.
 
+### Team page (`team.php`)
+
+- Table **`team_members`** is created by `admin_setup_db.php` (or run `sql/schema.sql` in phpMyAdmin).
+- **Public page** `team.php` lists only rows where **`is_active = 1`** (ordered by `sort_order`, then name).
+- Columns: `name`, `email`, `photo_url` (full URL to image, or leave `NULL` for initials placeholder), `designation`, `is_active`, `sort_order`.
+- Example insert:
+
+```sql
+INSERT INTO team_members (name, email, photo_url, designation, is_active, sort_order)
+VALUES
+  ('Komal Gupta', 'studio@example.com', 'https://example.com/photo.jpg', 'Lead Makeup Artist', 1, 0),
+  ('Priya Sharma', 'priya@example.com', NULL, 'Bridal Specialist', 1, 1);
+```
+
 ### If you still see JSON data (not MySQL)
 
 - Wrong config filename (e.g. `db_credentials.php copy.example`) — PHP only loads `db_credentials.php` or `db_credentials.local.php`.

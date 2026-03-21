@@ -35,6 +35,7 @@ $base = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/secure/') !== false) ? '../' : 
                 <ul>
                     <li><a href="<?php echo $base; ?>index.php" class="<?php echo $current_page === 'index' ? 'active' : ''; ?>">Home</a></li>
                     <li><a href="<?php echo $base; ?>about.php" class="<?php echo $current_page === 'about' ? 'active' : ''; ?>">About</a></li>
+                    <li><a href="<?php echo $base; ?>team.php" class="<?php echo $current_page === 'team' ? 'active' : ''; ?>">Team</a></li>
                     <li><a href="<?php echo $base; ?>services.php" class="<?php echo $current_page === 'services' ? 'active' : ''; ?>">Products &amp; Services</a></li>
                     <li><a href="<?php echo $base; ?>appointments.php" class="<?php echo $current_page === 'appointments' ? 'active' : ''; ?>">Book Appointment</a></li>
                     <li><a href="<?php echo $base; ?>news.php" class="<?php echo $current_page === 'news' ? 'active' : ''; ?>">News</a></li>
