@@ -1,23 +1,17 @@
 <?php
 /**
  * Secure section: list of current website users.
- * Accessible only after administrator login (userid + password, file-based auth).
  */
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/user_repository.php';
 requireAdmin('../login.php');
+
+kg_seed_users_from_file_if_empty();
+$users = kg_get_site_users();
 
 $page_title = 'Current Users';
 $current_page = 'users';
 require_once __DIR__ . '/../includes/header.php';
-
-$usersFile = __DIR__ . '/../data/site_users.json';
-$users = [];
-if (is_readable($usersFile)) {
-    $users = json_decode(file_get_contents($usersFile), true);
-    if (!is_array($users)) {
-        $users = [];
-    }
-}
 ?>
 
 <section class="page-section">
@@ -25,12 +19,13 @@ if (is_readable($usersFile)) {
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
             <h1>Current Website Users</h1>
             <div>
+                <a href="network_users.php" class="btn btn-secondary" style="margin-right: 8px;">Network Users</a>
                 <a href="analytics.php" class="btn btn-secondary" style="margin-right: 8px;">Analytics</a>
                 <a href="appointments.php" class="btn btn-secondary" style="margin-right: 8px;">Appointments</a>
                 <a href="../api/logout.php" class="btn btn-secondary">Sign Out</a>
             </div>
         </div>
-        <p class="lead">This document lists registered users of the site. Admin access only.</p>
+        <p class="lead">This document lists registered users of the site (loaded from MySQL, with file fallback).</p>
 
         <div class="user-list-doc" style="margin-top: 1.5rem;">
             <table class="user-table" style="width: 100%; border-collapse: collapse; background: var(--color-surface); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--color-border);">

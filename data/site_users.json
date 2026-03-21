@@ -1,8 +1,8 @@
 [
-    {"name": "Mary Smith", "email": "mary.smith@example.com", "joined": "2024-01-15"},
-    {"name": "John Wang", "email": "john.wang@example.com", "joined": "2024-02-20"},
-    {"name": "Alex Bington", "email": "alex.bington@example.com", "joined": "2024-03-10"},
-    {"name": "Sarah Chen", "email": "sarah.chen@example.com", "joined": "2024-04-05"},
-    {"name": "David Kumar", "email": "david.kumar@example.com", "joined": "2024-05-12"},
-    {"name": "Emma Wilson", "email": "emma.wilson@example.com", "joined": "2024-06-01"}
+    {"name": "Mary Smith", "email": "mary.smith@example.com", "joined_date": "2024-01-15"},
+    {"name": "John Wang", "email": "john.wang@example.com", "joined_date": "2024-02-20"},
+    {"name": "Alex Bington", "email": "alex.bington@example.com", "joined_date": "2024-03-10"},
+    {"name": "Sarah Chen", "email": "sarah.chen@example.com", "joined_date": "2024-04-05"},
+    {"name": "David Kumar", "email": "david.kumar@example.com", "joined_date": "2024-05-12"},
+    {"name": "Emma Wilson", "email": "emma.wilson@example.com", "joined_date": "2024-06-01"}
 ]

@@ -3,24 +3,14 @@
  * Admin analytics: subscribers + visit logs (visited users).
  */
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/user_repository.php';
 requireAdmin('../login.php');
 
 $page_title = 'Analytics';
 $current_page = 'analytics';
 require_once __DIR__ . '/../includes/header.php';
 
-$subFile = __DIR__ . '/../data/subscribers.json';
-$subs = [];
-if (is_readable($subFile)) {
-    $subs = json_decode(file_get_contents($subFile), true);
-    if (!is_array($subs)) {
-        $subs = [];
-    }
-}
-// Newest subscribers first
-usort($subs, function ($a, $b) {
-    return strcmp($b['subscribed_at'] ?? '', $a['subscribed_at'] ?? '');
-});
+$subs = kg_get_subscribers();
 
 $visitsFile = __DIR__ . '/../data/visits.json';
 $visits = [];
@@ -52,11 +42,12 @@ $recentVisits = array_reverse(array_slice($visits, -50));
             <h1>Analytics &amp; Subscribers</h1>
             <div>
                 <a href="users.php" class="btn btn-secondary" style="margin-right: 8px;">Users List</a>
+                <a href="network_users.php" class="btn btn-secondary" style="margin-right: 8px;">Network Users</a>
                 <a href="appointments.php" class="btn btn-secondary" style="margin-right: 8px;">Appointments</a>
                 <a href="../api/logout.php" class="btn btn-secondary">Sign Out</a>
             </div>
         </div>
-        <p class="lead">Subscribed emails and page visit analytics. Data is file-based for admin review.</p>
+        <p class="lead">Subscribed emails and page visit analytics. Subscribers are loaded from MySQL (with fallback).</p>
 
         <div class="analytics-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
             <div class="location-card" style="text-align: center;">

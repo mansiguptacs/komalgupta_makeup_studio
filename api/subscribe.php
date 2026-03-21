@@ -1,8 +1,9 @@
 <?php
 /**
- * Subscribe endpoint: saves email to data/subscribers.json for admin analytics.
+ * Subscribe endpoint: saves email in DB (fallback file when DB unavailable).
  */
 header('Content-Type: application/json');
+require_once __DIR__ . '/../includes/user_repository.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -19,25 +20,11 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-$file = dirname(__DIR__) . '/data/subscribers.json';
-$list = [];
-if (file_exists($file)) {
-    $list = json_decode(file_get_contents($file), true) ?: [];
+[$ok, $msg] = kg_add_subscriber($email, 'footer');
+if (!$ok) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => $msg]);
+    exit;
 }
 
-// Avoid duplicate by email
-foreach ($list as $row) {
-    if (isset($row['email']) && $row['email'] === $email) {
-        echo json_encode(['success' => true, 'message' => 'You are already subscribed.']);
-        exit;
-    }
-}
-
-$list[] = [
-    'email' => $email,
-    'subscribed_at' => date('Y-m-d H:i:s'),
-    'source' => 'footer',
-];
-file_put_contents($file, json_encode($list, JSON_PRETTY_PRINT));
-
-echo json_encode(['success' => true, 'message' => 'Thanks for subscribing!']);
+echo json_encode(['success' => true, 'message' => $msg]);
