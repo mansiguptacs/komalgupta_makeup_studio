@@ -169,29 +169,3 @@ function kg_ensure_site_users_columns($db) {
     return true;
 }
 
-function kg_add_column_if_missing($db, $table, $column, $columnDef) {
-    $tableEsc = $db->real_escape_string($table);
-    $columnEsc = $db->real_escape_string($column);
-
-    // Prefer SHOW COLUMNS to avoid information_schema permission issues
-    // on constrained shared hosting environments.
-    $checkSql = "SHOW COLUMNS FROM `{$tableEsc}` LIKE '{$columnEsc}'";
-    $res = $db->query($checkSql);
-    if ($res !== false) {
-        $exists = $res->num_rows > 0;
-        $res->free();
-        if ($exists) {
-            return true;
-        }
-    } else {
-        $GLOBALS['kg_db_last_error'] = "Could not inspect {$table}.{$column}: " . $db->error;
-        return false;
-    }
-
-    $alterSql = "ALTER TABLE `{$tableEsc}` ADD COLUMN `{$columnEsc}` {$columnDef}";
-    if (!$db->query($alterSql)) {
-        $GLOBALS['kg_db_last_error'] = "Could not add {$column} to {$table}: " . $db->error;
-        return false;
-    }
-    return true;
-}
