@@ -7,7 +7,9 @@
  */
 
 session_start();
-header('Content-Type: application/json');
+require_once __DIR__ . '/../includes/api_response.php';
+kg_send_json_headers('*');
+kg_handle_preflight();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

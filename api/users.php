@@ -3,9 +3,8 @@
  * JSON endpoint for users list.
  * Useful for cURL integration between friendly websites.
  */
-header('Content-Type: application/json');
 require_once __DIR__ . '/../includes/user_repository.php';
-
+require_once __DIR__ . '/../includes/api_response.php';
 // Optional shared secret check:
 // If config has friend_access_key set, friends must call:
 // - /api/users.php?key=THE_KEY

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/site_user_auth.php';
 $page_title = 'Book Appointment';
 require_once __DIR__ . '/includes/header.php';
 
@@ -8,6 +9,15 @@ $studio_location = 'Civil Lines, Badaun, Uttar Pradesh';
 <section class="page-section">
     <div class="container">
         <h1>Book an Appointment</h1>
+        <?php if (!kg_site_user_is_logged_in()): ?>
+            <div class="message error">
+                Please <a href="user_login.php">login</a> to book and track appointments with pagination history.
+            </div>
+        <?php else: ?>
+            <div class="message success">
+                You are logged in. Use your <a href="user_dashboard.php">dashboard</a> for booking and history.
+            </div>
+        <?php endif; ?>
         <p>Fill in your details. We will get back to you to confirm your slot at <strong><?php echo htmlspecialchars($studio_location); ?></strong>.</p>
 
         <form class="appointment-form" action="appointments.php" method="post">

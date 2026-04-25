@@ -33,20 +33,6 @@ VALUES
   ('Priya Sharma', 'priya@example.com', NULL, 'Bridal Specialist', 1, 1);
 ```
 
-### If you still see JSON data (not MySQL)
-
-- Wrong config filename (e.g. `db_credentials.php copy.example`) — PHP only loads `db_credentials.php` or `db_credentials.local.php`.
-- Empty password in credentials file.
-- Connection error — open **`admin_setup_db.php`**; it shows the last connection/SQL error message.
-- Earlier bug: subscriber INSERT had wrong SQL — fixed in `includes/user_repository.php`; redeploy that file.
-
-### Error: `getaddrinfo ... nodename nor servname provided, or not known` (errno 2002)
-
-That means **DNS failed**: PHP could not turn the hostname into an IP address.
-
-- **Running the site on your laptop** (e.g. `php -S`, MAMP, XAMPP): your Mac must resolve `sql303.infinityfree.com`. Check Wi‑Fi, try `ping sql303.infinityfree.com` in Terminal. Many free hosts **do not allow** MySQL from the public internet anyway — only from **their** web servers. For local coding, either leave DB password empty (JSON fallback) or use **`config/db_credentials.local.php`** with a **local** MySQL (`host` → `127.0.0.1`, create the same tables with `sql/schema.sql`).
-- **Running on InfinityFree** (uploaded site): open the hosting **Control Panel → MySQL** and copy the **exact** hostname shown (e.g. `sql303.infinityfree.com` or `sql###.epizy.com`). Put that in `db_credentials.php`. If DNS still fails on the server, wait/retry or ask InfinityFree support — it’s a resolver/network issue on the side where PHP runs.
-
 ## Friend website users via cURL
 - Your public users endpoint: `api/users.php` — responds with a **JSON array** of user objects `[{ "name", "email", "joined" }, …]` (no `success` / `site` wrapper).
   - Optional protection: if `config/db_credentials.php` has `friend_access_key` set, friends must call `/api/users.php?key=THE_KEY` (or send `X-Friend-Key: THE_KEY`). On failure: `{"error":"Unauthorized"}`.

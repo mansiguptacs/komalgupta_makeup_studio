@@ -1,21 +1,59 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 
-function kg_get_site_users() {
+function kg_get_site_users($filters = []) {
+    $nameFilter = trim((string)($filters['name'] ?? ''));
+    $emailFilter = trim((string)($filters['email'] ?? ''));
+    $phoneFilter = trim((string)($filters['phone'] ?? ''));
+
     $db = kg_db();
     if ($db && kg_ensure_tables($db)) {
         $rows = [];
-        $res = $db->query("SELECT id, name, email, joined_date FROM site_users ORDER BY COALESCE(joined_date, '1900-01-01') DESC, id DESC");
-        if ($res) {
-            while ($r = $res->fetch_assoc()) {
+        $whereParts = [];
+        $types = '';
+        $params = [];
+
+        if ($nameFilter !== '') {
+            $whereParts[] = "name LIKE ?";
+            $types .= 's';
+            $params[] = '%' . $nameFilter . '%';
+        }
+        if ($emailFilter !== '') {
+            $whereParts[] = "email LIKE ?";
+            $types .= 's';
+            $params[] = '%' . $emailFilter . '%';
+        }
+        if ($phoneFilter !== '') {
+            $whereParts[] = "(cell_phone LIKE ? OR home_phone LIKE ?)";
+            $types .= 'ss';
+            $params[] = '%' . $phoneFilter . '%';
+            $params[] = '%' . $phoneFilter . '%';
+        }
+
+        $sql = "SELECT id, name, email, joined_date, home_phone, cell_phone FROM site_users";
+        if (!empty($whereParts)) {
+            $sql .= " WHERE " . implode(' AND ', $whereParts);
+        }
+        $sql .= " ORDER BY COALESCE(joined_date, '1900-01-01') DESC, id DESC";
+
+        $stmt = $db->prepare($sql);
+        if ($stmt) {
+            if ($types !== '') {
+                $stmt->bind_param($types, ...$params);
+            }
+            $stmt->execute();
+            $res = $stmt->get_result();
+            while ($res && ($r = $res->fetch_assoc())) {
                 $rows[] = [
                     'id' => $r['id'],
                     'name' => $r['name'],
                     'email' => $r['email'],
                     'joined' => $r['joined_date'] ?: '',
+                    'home_phone' => $r['home_phone'] ?? '',
+                    'cell_phone' => $r['cell_phone'] ?? '',
                 ];
             }
-            $res->free();
+            $stmt->close();
         }
         return $rows;
     }
@@ -24,7 +62,28 @@ function kg_get_site_users() {
     if (is_readable($usersFile)) {
         $users = json_decode(file_get_contents($usersFile), true);
         if (is_array($users)) {
-            return $users;
+            if ($nameFilter === '' && $emailFilter === '' && $phoneFilter === '') {
+                return $users;
+            }
+            $filtered = [];
+            foreach ($users as $u) {
+                $name = (string)($u['name'] ?? '');
+                $email = (string)($u['email'] ?? '');
+                $homePhone = (string)($u['home_phone'] ?? '');
+                $cellPhone = (string)($u['cell_phone'] ?? '');
+
+                if ($nameFilter !== '' && stripos($name, $nameFilter) === false) {
+                    continue;
+                }
+                if ($emailFilter !== '' && stripos($email, $emailFilter) === false) {
+                    continue;
+                }
+                if ($phoneFilter !== '' && stripos($homePhone . ' ' . $cellPhone, $phoneFilter) === false) {
+                    continue;
+                }
+                $filtered[] = $u;
+            }
+            return $filtered;
         }
     }
     return [];

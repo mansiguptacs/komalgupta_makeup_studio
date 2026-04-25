@@ -103,6 +103,41 @@ body {
     font-weight: 600;
 }
 
+.profile-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    background: var(--color-surface);
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.profile-nav-link:hover,
+.profile-nav-link.active {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background: #fff4f4;
+}
+
+.profile-nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-nav-text {
+    font-size: 0.92rem;
+    font-weight: 600;
+    max-width: 11rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 /* Main content */
 .main-content {
     min-height: 60vh;
@@ -264,6 +299,34 @@ body {
 .page-section .lead {
     color: var(--color-text-muted);
     margin: 0 0 1.5rem;
+}
+
+.account-page {
+    max-width: 900px;
+}
+
+.account-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.account-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+}
+
+.account-card h2 {
+    margin: 0 0 0.45rem;
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+}
+
+.account-card p {
+    margin: 0 0 0.9rem;
+    color: var(--color-text-muted);
 }
 
 /* Services */
@@ -629,6 +692,7 @@ body {
     margin: 0 0 0.35rem;
     min-height: 2.6em;
     display: -webkit-box;
+    line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;

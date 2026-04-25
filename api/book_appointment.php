@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../includes/api_response.php';
+kg_send_json_headers('*');
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
