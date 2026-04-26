@@ -17,17 +17,16 @@ if (!$db) {
     $messages[] = 'Check: (1) File is named exactly config/db_credentials.php (not a copy). (2) password is set. (3) Host/user/database match InfinityFree panel.';
 } else {
     if (kg_ensure_tables($db)) {
-        $messages[] = 'Tables OK: site_users, subscribers, team_members.';
-        kg_seed_users_from_file_if_empty();
-        $messages[] = 'Users: imported from data/site_users.json if table was empty.';
+        $messages[] = 'Schema OK. Required tables already exist.';
         $n = kg_seed_subscribers_from_file();
         $messages[] = 'Subscribers: imported ' . (int)$n . ' row(s) from data/subscribers.json (duplicates skipped).';
     } else {
-        $messages[] = 'Failed to create tables.';
+        $messages[] = 'Schema validation failed.';
         $err = kg_db_last_error();
         if ($err !== '') {
             $messages[] = $err;
         }
+        $messages[] = 'Import sql/schema.sql manually in phpMyAdmin, then reload this page.';
     }
 }
 ?>

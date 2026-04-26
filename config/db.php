@@ -67,107 +67,37 @@ function kg_db() {
 }
 
 function kg_ensure_tables($db) {
+    static $validated = false;
     $GLOBALS['kg_db_last_error'] = null;
 
-    $sql = [
-        'CREATE TABLE IF NOT EXISTS site_users (
-            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(150) NOT NULL,
-            email VARCHAR(190) NOT NULL UNIQUE,
-            joined_date DATE NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+    if ($validated) {
+        return true;
+    }
 
-        'CREATE TABLE IF NOT EXISTS user_bookings (
-            booking_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(150) NOT NULL,
-            email VARCHAR(190) NOT NULL,
-            cell_phone VARCHAR(30) NOT NULL,
-            booking_date DATE NOT NULL,
-            service_interested_in VARCHAR(190) NOT NULL,
-            message TEXT NULL,
-            user_id INT UNSIGNED NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_user_bookings_user (user_id),
-            INDEX idx_user_bookings_date (booking_date),
-            CONSTRAINT fk_user_bookings_user FOREIGN KEY (user_id) REFERENCES site_users(id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-
-        'CREATE TABLE IF NOT EXISTS product_reviews (
-            review_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            user_id INT UNSIGNED NOT NULL,
-            product_id INT UNSIGNED NOT NULL,
-            rating DECIMAL(2,1) NOT NULL,
-            review_text TEXT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY uniq_user_product (user_id, product_id),
-            INDEX idx_product_reviews_product (product_id),
-            CONSTRAINT fk_product_reviews_user FOREIGN KEY (user_id) REFERENCES site_users(id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-
-        'CREATE TABLE IF NOT EXISTS service_reviews (
-            review_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            user_id INT UNSIGNED NOT NULL,
-            service_id INT UNSIGNED NOT NULL,
-            rating DECIMAL(2,1) NOT NULL,
-            review_text TEXT NULL,
-            no_of_clicks INT UNSIGNED NOT NULL DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY uniq_user_service (user_id, service_id),
-            INDEX idx_service_reviews_service (service_id),
-            CONSTRAINT fk_service_reviews_user FOREIGN KEY (user_id) REFERENCES site_users(id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-
-        'CREATE TABLE IF NOT EXISTS subscribers (
-            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            email VARCHAR(190) NOT NULL UNIQUE,
-            source VARCHAR(50) DEFAULT \'footer\',
-            subscribed_at DATETIME NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-
-        'CREATE TABLE IF NOT EXISTS team_members (
-            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(150) NOT NULL,
-            email VARCHAR(190) NOT NULL,
-            photo_url VARCHAR(512) NULL,
-            designation VARCHAR(150) NOT NULL,
-            is_active TINYINT(1) NOT NULL DEFAULT 1,
-            sort_order INT UNSIGNED NOT NULL DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+    $requiredTables = [
+        'site_users',
+        'subscribers',
+        'team_members',
+        'user_bookings',
+        'product_reviews',
+        'service_reviews',
     ];
-
-    foreach ($sql as $q) {
-        if (!$db->query($q)) {
-            $GLOBALS['kg_db_last_error'] = 'SQL error: ' . $db->error;
+    foreach ($requiredTables as $table) {
+        $tableEsc = $db->real_escape_string($table);
+        $res = $db->query("SHOW TABLES LIKE '{$tableEsc}'");
+        if ($res === false) {
+            $GLOBALS['kg_db_last_error'] = 'SQL error while validating schema: ' . $db->error;
+            return false;
+        }
+        $exists = $res->num_rows > 0;
+        $res->free();
+        if (!$exists) {
+            $GLOBALS['kg_db_last_error'] = "Missing table `{$table}`. Import sql/schema.sql manually, then retry.";
             return false;
         }
     }
-    if (!kg_ensure_site_users_columns($db)) {
-        return false;
-    }
-    return true;
-}
 
-function kg_ensure_site_users_columns($db) {
-    $columns = [
-        'first_name' => 'VARCHAR(120) NULL',
-        'last_name' => 'VARCHAR(120) NULL',
-        'home_address' => 'VARCHAR(255) NULL',
-        'home_phone' => 'VARCHAR(30) NULL',
-        'cell_phone' => 'VARCHAR(30) NULL',
-        'last_logged_in' => 'DATETIME NULL',
-        'password' => 'VARCHAR(200) NULL',
-    ];
-
-    foreach ($columns as $name => $def) {
-        if (!kg_add_column_if_missing($db, 'site_users', $name, $def)) {
-            return false;
-        }
-    }
+    $validated = true;
     return true;
 }
 

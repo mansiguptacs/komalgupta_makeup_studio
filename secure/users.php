@@ -6,11 +6,17 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/user_repository.php';
 requireAdmin('../login.php');
 
-kg_seed_users_from_file_if_empty();
 $searchFirstName = trim((string)($_GET['first_name'] ?? ''));
 $searchLastName = trim((string)($_GET['last_name'] ?? ''));
 $searchEmail = trim((string)($_GET['email'] ?? ''));
 $searchPhone = trim((string)($_GET['phone'] ?? ''));
+
+$users = kg_get_site_users([
+    'first_name' => $searchFirstName,
+    'last_name' => $searchLastName,
+    'email' => $searchEmail,
+    'phone' => $searchPhone,
+]);
 
 $page_title = 'Current Users';
 $current_page = 'users';

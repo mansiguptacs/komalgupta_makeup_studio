@@ -2,7 +2,8 @@
 require_once __DIR__ . '/../config/db.php';
 
 function kg_get_site_users($filters = []) {
-    $nameFilter = trim((string)($filters['name'] ?? ''));
+    $firstNameFilter = trim((string)($filters['first_name'] ?? ''));
+    $lastNameFilter = trim((string)($filters['last_name'] ?? ''));
     $emailFilter = trim((string)($filters['email'] ?? ''));
     $phoneFilter = trim((string)($filters['phone'] ?? ''));
 
@@ -13,10 +14,15 @@ function kg_get_site_users($filters = []) {
         $types = '';
         $params = [];
 
-        if ($nameFilter !== '') {
-            $whereParts[] = "name LIKE ?";
+        if ($firstNameFilter !== '') {
+            $whereParts[] = "first_name LIKE ?";
             $types .= 's';
-            $params[] = '%' . $nameFilter . '%';
+            $params[] = '%' . $firstNameFilter . '%';
+        }
+        if ($lastNameFilter !== '') {
+            $whereParts[] = "last_name LIKE ?";
+            $types .= 's';
+            $params[] = '%' . $lastNameFilter . '%';
         }
         if ($emailFilter !== '') {
             $whereParts[] = "email LIKE ?";
@@ -30,7 +36,7 @@ function kg_get_site_users($filters = []) {
             $params[] = '%' . $phoneFilter . '%';
         }
 
-        $sql = "SELECT id, name, email, joined_date, home_phone, cell_phone FROM site_users";
+        $sql = "SELECT id, first_name, last_name, email, joined_date, home_phone, cell_phone FROM site_users";
         if (!empty($whereParts)) {
             $sql .= " WHERE " . implode(' AND ', $whereParts);
         }
@@ -44,9 +50,13 @@ function kg_get_site_users($filters = []) {
             $stmt->execute();
             $res = $stmt->get_result();
             while ($res && ($r = $res->fetch_assoc())) {
+                $first = (string)($r['first_name'] ?? '');
+                $last = (string)($r['last_name'] ?? '');
                 $rows[] = [
                     'id' => $r['id'],
-                    'name' => $r['name'],
+                    'first_name' => $first,
+                    'last_name' => $last,
+                    'name' => trim($first . ' ' . $last),
                     'email' => $r['email'],
                     'joined' => $r['joined_date'] ?: '',
                     'home_phone' => $r['home_phone'] ?? '',
@@ -58,79 +68,7 @@ function kg_get_site_users($filters = []) {
         return $rows;
     }
 
-    $usersFile = dirname(__DIR__) . '/data/site_users.json';
-    if (is_readable($usersFile)) {
-        $users = json_decode(file_get_contents($usersFile), true);
-        if (is_array($users)) {
-            if ($nameFilter === '' && $emailFilter === '' && $phoneFilter === '') {
-                return $users;
-            }
-            $filtered = [];
-            foreach ($users as $u) {
-                $name = (string)($u['name'] ?? '');
-                $email = (string)($u['email'] ?? '');
-                $homePhone = (string)($u['home_phone'] ?? '');
-                $cellPhone = (string)($u['cell_phone'] ?? '');
-
-                if ($nameFilter !== '' && stripos($name, $nameFilter) === false) {
-                    continue;
-                }
-                if ($emailFilter !== '' && stripos($email, $emailFilter) === false) {
-                    continue;
-                }
-                if ($phoneFilter !== '' && stripos($homePhone . ' ' . $cellPhone, $phoneFilter) === false) {
-                    continue;
-                }
-                $filtered[] = $u;
-            }
-            return $filtered;
-        }
-    }
     return [];
-}
-
-function kg_seed_users_from_file_if_empty() {
-    $db = kg_db();
-    if (!$db || !kg_ensure_tables($db)) {
-        return;
-    }
-
-    $countRes = $db->query("SELECT COUNT(*) AS c FROM site_users");
-    $count = 0;
-    if ($countRes) {
-        $row = $countRes->fetch_assoc();
-        $count = (int)($row['c'] ?? 0);
-        $countRes->free();
-    }
-    if ($count > 0) {
-        return;
-    }
-
-    $usersFile = dirname(__DIR__) . '/data/site_users.json';
-    if (!is_readable($usersFile)) {
-        return;
-    }
-    $users = json_decode(file_get_contents($usersFile), true);
-    if (!is_array($users)) {
-        return;
-    }
-
-    $stmt = $db->prepare("INSERT IGNORE INTO site_users (name, email, joined_date) VALUES (?, ?, ?)");
-    if (!$stmt) {
-        return;
-    }
-    foreach ($users as $u) {
-        $name = trim((string)($u['name'] ?? ''));
-        $email = trim((string)($u['email'] ?? ''));
-        $joined = trim((string)($u['joined'] ?? $u['joined_date'] ?? ''));
-        if ($name === '' || $email === '') {
-            continue;
-        }
-        $joinedOrNull = $joined !== '' ? $joined : null;
-        $stmt->bind_param('sss', $name, $email, $joinedOrNull);
-        $stmt->execute();
-    }
-    $stmt->close();
 }
 
 /**

@@ -22,7 +22,6 @@ if ($requiredKey !== '') {
     }
 }
 
-kg_seed_users_from_file_if_empty();
 $users = kg_get_site_users();
 
 // Plain JSON array of user objects (name, email, joined, …) for friend-site cURL

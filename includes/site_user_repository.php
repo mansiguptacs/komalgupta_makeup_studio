@@ -9,7 +9,6 @@ function kg_register_site_user($payload) {
 
     $firstName = trim((string)($payload['first_name'] ?? ''));
     $lastName = trim((string)($payload['last_name'] ?? ''));
-    $name = trim($firstName . ' ' . $lastName);
     $email = strtolower(trim((string)($payload['email'] ?? '')));
     $password = (string)($payload['password'] ?? '');
     $cellPhone = trim((string)($payload['cell_phone'] ?? ''));
@@ -26,7 +25,7 @@ function kg_register_site_user($payload) {
         return [false, 'Password must be at least 6 characters long.'];
     }
 
-    $check = $db->prepare("SELECT id, name, password FROM site_users WHERE email = ? LIMIT 1");
+    $check = $db->prepare("SELECT id, password FROM site_users WHERE email = ? LIMIT 1");
     if (!$check) {
         return [false, 'Could not process registration right now.'];
     }
@@ -36,34 +35,17 @@ function kg_register_site_user($payload) {
     if ($exists && $exists->num_rows > 0) {
         $existing = $exists->fetch_assoc();
         $check->close();
-        // Migration path: allow setting password for existing imported users
-        // that were created before auth support and have no password yet.
-        if (empty($existing['password'])) {
-            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-            $existingId = (int)($existing['id'] ?? 0);
-            $update = $db->prepare("UPDATE site_users SET name = ?, first_name = ?, last_name = ?, home_address = ?, home_phone = ?, cell_phone = ?, password = ? WHERE id = ?");
-            if (!$update) {
-                return [false, 'Could not activate account right now.'];
-            }
-            $update->bind_param('sssssssi', $name, $firstName, $lastName, $homeAddress, $homePhone, $cellPhone, $passwordHash, $existingId);
-            $ok = $update->execute();
-            $update->close();
-            if (!$ok) {
-                return [false, 'Could not activate account right now.'];
-            }
-            return [true, ['id' => $existingId, 'name' => $name, 'email' => $email]];
-        }
         return [false, 'An account already exists with this email. Please login.'];
     }
     $check->close();
 
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     $joinedDate = date('Y-m-d');
-    $stmt = $db->prepare("INSERT INTO site_users (name, email, joined_date, first_name, last_name, home_address, home_phone, cell_phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $db->prepare("INSERT INTO site_users (first_name, last_name, email, password, home_address, home_phone, cell_phone, joined_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     if (!$stmt) {
         return [false, 'Could not create account right now.'];
     }
-    $stmt->bind_param('sssssssss', $name, $email, $joinedDate, $firstName, $lastName, $homeAddress, $homePhone, $cellPhone, $passwordHash);
+    $stmt->bind_param('ssssssss', $firstName, $lastName, $email, $passwordHash, $homeAddress, $homePhone, $cellPhone, $joinedDate);
     $ok = $stmt->execute();
     $newId = (int)$stmt->insert_id;
     $stmt->close();
@@ -71,7 +53,7 @@ function kg_register_site_user($payload) {
     if (!$ok) {
         return [false, 'Could not create account right now.'];
     }
-    return [true, ['id' => $newId, 'name' => $name, 'email' => $email]];
+    return [true, ['id' => $newId, 'first_name' => $firstName, 'last_name' => $lastName, 'email' => $email]];
 }
 
 function kg_authenticate_site_user($email, $password) {
@@ -86,7 +68,7 @@ function kg_authenticate_site_user($email, $password) {
         return [false, 'Email and password are required.'];
     }
 
-    $stmt = $db->prepare("SELECT id, name, email, password FROM site_users WHERE email = ? LIMIT 1");
+    $stmt = $db->prepare("SELECT id, first_name, last_name, email, password FROM site_users WHERE email = ? LIMIT 1");
     if (!$stmt) {
         return [false, 'Could not process login right now.'];
     }
@@ -100,7 +82,7 @@ function kg_authenticate_site_user($email, $password) {
         return [false, 'Invalid email or password.'];
     }
     if (empty($row['password'])) {
-        return [false, 'This account exists but password is not set yet. Please register again with the same email to activate it.'];
+        return [false, 'Invalid email or password.'];
     }
 
     $storedPassword = (string)$row['password'];
@@ -141,7 +123,7 @@ function kg_authenticate_site_user($email, $password) {
         $update->close();
     }
 
-    return [true, ['id' => (int)$row['id'], 'name' => (string)($row['name'] ?? ''), 'email' => $row['email']]];
+    return [true, ['id' => (int)$row['id'], 'first_name' => (string)($row['first_name'] ?? ''), 'last_name' => (string)($row['last_name'] ?? ''), 'email' => $row['email']]];
 }
 
 function kg_get_services_catalog() {
@@ -159,7 +141,8 @@ function kg_create_user_booking($user, $payload) {
     if (!$db || !kg_ensure_tables($db)) {
         return [false, 'Database is not configured.'];
     }
-    $name = trim((string)($payload['name'] ?? $user['name']));
+    $fallbackName = trim((string)($user['first_name'] ?? '') . ' ' . (string)($user['last_name'] ?? ''));
+    $name = trim((string)($payload['name'] ?? $fallbackName));
     $email = strtolower(trim((string)($payload['email'] ?? $user['email'])));
     $cellPhone = trim((string)($payload['cell_phone'] ?? ''));
     $bookingDate = trim((string)($payload['booking_date'] ?? ''));

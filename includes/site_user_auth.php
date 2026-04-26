@@ -14,7 +14,9 @@ function kg_site_user() {
 function kg_site_user_login($userRow) {
     $_SESSION['site_user'] = [
         'id' => (int)$userRow['id'],
-        'name' => (string)$userRow['name'],
+        'first_name' => (string)($userRow['first_name'] ?? ''),
+        'last_name' => (string)($userRow['last_name'] ?? ''),
+        'name' => trim((string)($userRow['first_name'] ?? '') . ' ' . (string)($userRow['last_name'] ?? '')),
         'email' => (string)$userRow['email'],
     ];
 }

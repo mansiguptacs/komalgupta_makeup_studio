@@ -16,12 +16,13 @@ The **Admin** area shows a document listing current website users. Access requir
 
 1. Copy `config/db_credentials.php.example` to **`config/db_credentials.php`** (exact filename).
 2. Add your DB password in `config/db_credentials.php` and upload it to the server.
-3. Login as admin and open **`admin_setup_db.php`** once — creates tables, imports `data/site_users.json` if empty, and imports `data/subscribers.json` into MySQL.
-4. New subscribers save to MySQL via `api/subscribe.php`; **Analytics** reads subscribers from MySQL when the DB connects.
+3. In phpMyAdmin, import **`sql/schema.sql`** once (this is the single source of truth for schema).
+4. Login as admin and open **`admin_setup_db.php`** once — validates schema and imports `data/subscribers.json` into MySQL.
+5. New subscribers save to MySQL via `api/subscribe.php`; **Analytics** reads subscribers from MySQL when the DB connects.
 
 ### Team page (`team.php`)
 
-- Table **`team_members`** is created by `admin_setup_db.php` (or run `sql/schema.sql` in phpMyAdmin).
+- Tables are defined in `sql/schema.sql` and should be created by importing that file.
 - **Public page** `team.php` lists only rows where **`is_active = 1`** (ordered by `sort_order`, then name).
 - Columns: `name`, `email`, `photo_url` (full URL to image, or leave `NULL` for initials placeholder), `designation`, `is_active`, `sort_order`.
 - Example insert:
@@ -34,7 +35,7 @@ VALUES
 ```
 
 ## Friend website users via cURL
-- Your public users endpoint: `api/users.php` — responds with a **JSON array** of user objects `[{ "name", "email", "joined" }, …]` (no `success` / `site` wrapper).
+- Your public users endpoint: `api/users.php` — responds with a **JSON array** of user objects (includes `first_name`, `last_name`, `name`, `email`, `joined`, …). `name` is derived from first/last name.
   - Optional protection: if `config/db_credentials.php` has `friend_access_key` set, friends must call `/api/users.php?key=THE_KEY` (or send `X-Friend-Key: THE_KEY`). On failure: `{"error":"Unauthorized"}`.
 - Combined admin page: `secure/network_users.php` (supports 3–4+ friend endpoints)
 - Set your friend API URLs in `config/db_credentials.php` key `friend_users_api`
