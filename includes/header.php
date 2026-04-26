@@ -3,6 +3,7 @@
  * Shared header for Komal Gupta Makeup Studio
  * Defines page title and active nav for current page.
  */
+require_once __DIR__ . '/php_logging.php';
 require_once __DIR__ . '/site_user_auth.php';
 require_once __DIR__ . '/auth.php';
 $current_page = basename($_SERVER['PHP_SELF'], '.php');

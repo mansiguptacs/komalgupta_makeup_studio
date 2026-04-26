@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/php_logging.php';
 header('Content-Type: application/json');
 
 $news_file = __DIR__ . '/../data/news.csv';

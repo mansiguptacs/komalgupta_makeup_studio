@@ -2,6 +2,7 @@
 /**
  * Central DB connector (MySQLi) for InfinityFree.
  */
+require_once __DIR__ . '/../includes/php_logging.php';
 
 /** @var string|null Last connection or query error (for admin diagnostics) */
 $GLOBALS['kg_db_last_error'] = null;

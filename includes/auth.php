@@ -3,6 +3,7 @@
  * Session-based admin authentication helper.
  * Use requireAdmin() at the top of any secure page.
  */
+require_once __DIR__ . '/php_logging.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

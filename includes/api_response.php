@@ -2,6 +2,8 @@
 /**
  * Shared API response headers for JSON endpoints.
  */
+require_once __DIR__ . '/php_logging.php';
+
 function kg_send_json_headers($allowOrigin = '*') {
     header('Content-Type: application/json; charset=utf-8');
     header('Access-Control-Allow-Origin: ' . $allowOrigin);

@@ -2,6 +2,7 @@
 /**
  * Admin logout. Destroys session and redirects to login page.
  */
+require_once __DIR__ . '/../includes/php_logging.php';
 
 session_start();
 $_SESSION = [];

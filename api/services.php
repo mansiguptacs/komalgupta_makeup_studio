@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/php_logging.php';
 header('Content-Type: application/json');
 
 function readCsvData($filename) {

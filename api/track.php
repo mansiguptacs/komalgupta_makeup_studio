@@ -4,6 +4,7 @@
  * Called via fetch on each page load (footer script).
  * GET ?page=/path — optional ref for referrer context later.
  */
+require_once __DIR__ . '/../includes/php_logging.php';
 header('Cache-Control: no-store');
 
 $page = isset($_GET['page']) ? trim($_GET['page']) : '';
