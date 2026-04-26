@@ -18,10 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $apps = json_decode(file_get_contents($file), true) ?: [];
         }
         $apps[] = [
-            'id' => uniqid(),
+            'booking_id' => uniqid(),
             'name' => trim($data['name'] ?? ''),
             'email' => trim($data['email'] ?? ''),
-            'phone' => trim($data['phone'] ?? ''),
+            'cell_phone' => trim($data['phone'] ?? ''),
             'location' => trim($data['location'] ?? 'Civil Lines, Badaun, Uttar Pradesh') ?: 'Civil Lines, Badaun, Uttar Pradesh',
             'date' => trim($data['date'] ?? ''),
             'service' => trim($data['service'] ?? ''),

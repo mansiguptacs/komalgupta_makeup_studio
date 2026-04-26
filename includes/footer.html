@@ -23,24 +23,44 @@
             <script>
             (function(){
                 var apiBase = '<?php echo isset($base) ? htmlspecialchars($base, ENT_QUOTES) : ''; ?>';
+                function kgLogError(step, err, extra) {
+                    console.error('[KG Frontend]', step, err || '', extra || '');
+                }
                 var f = document.getElementById('subscribe-form');
                 if (f) f.addEventListener('submit', function(e){
                     e.preventDefault();
+                    console.group('[KG Subscribe]');
                     var email = f.querySelector('input[name=email]').value.trim();
                     var msg = document.getElementById('subscribe-msg');
+                    console.log('Step 1: submitting email', email);
                     fetch(apiBase + 'api/subscribe.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) })
-                    .then(function(r){ return r.json(); })
-                    .then(function(d){
+                    .then(function(r){
+                        console.log('Step 2: response status', r.status);
+                        return r.text();
+                    })
+                    .then(function(txt){
+                        var d = {};
+                        try {
+                            d = JSON.parse(txt);
+                        } catch (e) {
+                            kgLogError('Step 3: JSON parse failed', e, txt.slice(0, 250));
+                            throw new Error('Invalid JSON response');
+                        }
+                        console.log('Step 3: parsed response', d);
                         msg.style.display = 'block';
                         msg.className = 'message ' + (d.success ? 'success' : 'error');
                         msg.style.background = d.success ? '#1b5e20' : '#b71c1c';
                         msg.style.border = 'none';
                         msg.textContent = d.message || (d.success ? 'Thanks for subscribing!' : d.error || 'Error.');
                         if (d.success) f.querySelector('input[name=email]').value = '';
-                    }).catch(function(){ msg.style.display='block'; msg.style.background='#b71c1c'; msg.textContent='Could not subscribe.'; });
+                    }).catch(function(err){
+                        kgLogError('Step X: subscribe fetch failed', err);
+                        msg.style.display='block'; msg.style.background='#b71c1c'; msg.textContent='Could not subscribe.';
+                    }).finally(function(){ console.groupEnd(); });
                 });
                 var path = window.location.pathname || '/';
-                fetch(apiBase + 'api/track.php?page=' + encodeURIComponent(path), { method: 'GET', credentials: 'same-origin' }).catch(function(){});
+                fetch(apiBase + 'api/track.php?page=' + encodeURIComponent(path), { method: 'GET', credentials: 'same-origin' })
+                    .catch(function(err){ kgLogError('track.php fetch failed', err, { path: path }); });
             })();
             </script>
         </div>

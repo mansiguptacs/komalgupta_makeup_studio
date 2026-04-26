@@ -111,6 +111,7 @@ function kg_ensure_tables($db) {
             service_id INT UNSIGNED NOT NULL,
             rating DECIMAL(2,1) NOT NULL,
             review_text TEXT NULL,
+            no_of_clicks INT UNSIGNED NOT NULL DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             UNIQUE KEY uniq_user_service (user_id, service_id),
