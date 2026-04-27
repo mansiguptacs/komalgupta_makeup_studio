@@ -6,7 +6,7 @@
  * On success: sets session and returns JSON success + redirect URL.
  */
 
-session_start();
+require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/api_response.php';
 kg_send_json_headers('*');
 kg_handle_preflight();
@@ -14,6 +14,14 @@ kg_handle_preflight();
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+    exit;
+}
+
+if (isSiteUserSessionActive()) {
+    echo json_encode([
+        'success' => false,
+        'error' => 'A user account session is already active. Please logout from user account first, then login as admin.',
+    ]);
     exit;
 }
 

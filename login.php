@@ -16,6 +16,9 @@ require_once __DIR__ . '/includes/header.php';
 
 $returnUrl = isset($_GET['return']) ? htmlspecialchars($_GET['return']) : 'secure/users.php';
 $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
+if (isSiteUserSessionActive()) {
+    $error = 'A user account session is already active. Please logout from user account first, then login as admin.';
+}
 ?>
 
 <section class="page-section">

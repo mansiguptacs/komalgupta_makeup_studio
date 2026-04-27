@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/site_user_auth.php';
 require_once __DIR__ . '/includes/site_user_repository.php';
+require_once __DIR__ . '/includes/auth.php';
 
 if (kg_site_user_is_logged_in()) {
     header('Location: user_dashboard.php');
@@ -9,14 +10,21 @@ if (kg_site_user_is_logged_in()) {
 
 $message = '';
 $error = '';
+if (isAdminLoggedIn()) {
+    $error = 'Admin session is already active. Please logout from admin first, then create/login as user.';
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    list($ok, $result) = kg_register_site_user($_POST);
-    if ($ok) {
-        kg_site_user_login($result);
-        header('Location: user_dashboard.php?welcome=1');
-        exit;
+    if (isAdminLoggedIn()) {
+        $error = 'Admin session is already active. Please logout from admin first, then create/login as user.';
+    } else {
+        list($ok, $result) = kg_register_site_user($_POST);
+        if ($ok) {
+            kg_site_user_login($result);
+            header('Location: user_dashboard.php?welcome=1');
+            exit;
+        }
+        $error = (string)$result;
     }
-    $error = (string)$result;
 }
 
 $page_title = 'User Register';

@@ -18,6 +18,15 @@ function isAdminLoggedIn() {
 }
 
 /**
+ * Check if a site-user session is currently active.
+ * This keeps admin auth independent from site user auth includes.
+ * @return bool
+ */
+function isSiteUserSessionActive() {
+    return isset($_SESSION['site_user']) && is_array($_SESSION['site_user']) && !empty($_SESSION['site_user']['id']);
+}
+
+/**
  * Require admin login. Redirects to login page with return URL if not logged in.
  * Call at the top of secure pages.
  * @param string $loginPage Path to login page (e.g. 'login.php')

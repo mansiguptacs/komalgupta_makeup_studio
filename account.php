@@ -37,7 +37,7 @@ require_once __DIR__ . '/includes/header.php';
                     <p>Sign out from your user account safely.</p>
                     <a class="btn btn-secondary" href="user_logout.php">Logout</a>
                 </article>
-            <?php else: ?>
+            <?php elseif (!$isAdmin): ?>
                 <article class="account-card">
                     <h2>User login</h2>
                     <p>Already have an account? Sign in to manage bookings and reviews.</p>
@@ -61,7 +61,7 @@ require_once __DIR__ . '/includes/header.php';
                     <p>Sign out from the admin session.</p>
                     <a class="btn btn-secondary" href="api/logout.php">Admin logout</a>
                 </article>
-            <?php else: ?>
+            <?php elseif (!$isSiteUser): ?>
                 <article class="account-card">
                     <h2>Admin login</h2>
                     <p>Staff/admin users can sign in here.</p>
