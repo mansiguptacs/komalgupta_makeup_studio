@@ -11,12 +11,27 @@ $searchLastName = trim((string)($_GET['last_name'] ?? ''));
 $searchEmail = trim((string)($_GET['email'] ?? ''));
 $searchPhone = trim((string)($_GET['phone'] ?? ''));
 
-$users = kg_get_site_users([
+$allUsers = kg_get_site_users([
     'first_name' => $searchFirstName,
     'last_name' => $searchLastName,
     'email' => $searchEmail,
     'phone' => $searchPhone,
 ]);
+$currentPageNumber = max(1, (int)($_GET['page'] ?? 1));
+$usersPerPage = 10;
+$totalUsers = count($allUsers);
+$totalPages = max(1, (int)ceil($totalUsers / $usersPerPage));
+if ($currentPageNumber > $totalPages) {
+    $currentPageNumber = $totalPages;
+}
+$offset = ($currentPageNumber - 1) * $usersPerPage;
+$users = array_slice($allUsers, $offset, $usersPerPage);
+$paginationQuery = [
+    'first_name' => $searchFirstName,
+    'last_name' => $searchLastName,
+    'email' => $searchEmail,
+    'phone' => $searchPhone,
+];
 
 $page_title = 'Current Users';
 $current_page = 'users';
@@ -72,7 +87,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <tbody>
                     <?php foreach ($users as $i => $u): ?>
                     <tr style="border-bottom: 1px solid var(--color-border);">
-                        <td style="padding: 0.75rem 1rem;"><?php echo (int)($i + 1); ?></td>
+                        <td style="padding: 0.75rem 1rem;"><?php echo (int)($offset + $i + 1); ?></td>
                         <td style="padding: 0.75rem 1rem;"><?php echo htmlspecialchars($u['first_name'] ?? '') . ' ' . htmlspecialchars($u['last_name'] ?? ''); ?></td>
                         <td style="padding: 0.75rem 1rem;"><?php echo htmlspecialchars($u['email'] ?? ''); ?></td>
                         <td style="padding: 0.75rem 1rem;"><?php echo htmlspecialchars($u['cell_phone'] ?? $u['home_phone'] ?? ''); ?></td>
@@ -87,6 +102,19 @@ require_once __DIR__ . '/../includes/header.php';
                 </tbody>
             </table>
         </div>
+        <?php if ($totalPages > 1): ?>
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                <?php if ($currentPageNumber > 1): ?>
+                    <?php $prevQuery = $paginationQuery; $prevQuery['page'] = $currentPageNumber - 1; ?>
+                    <a class="btn btn-secondary" href="users.php?<?php echo htmlspecialchars(http_build_query($prevQuery)); ?>">Previous</a>
+                <?php endif; ?>
+                <span style="color: var(--color-text-muted);">Page <?php echo (int)$currentPageNumber; ?> of <?php echo (int)$totalPages; ?></span>
+                <?php if ($currentPageNumber < $totalPages): ?>
+                    <?php $nextQuery = $paginationQuery; $nextQuery['page'] = $currentPageNumber + 1; ?>
+                    <a class="btn btn-secondary" href="users.php?<?php echo htmlspecialchars(http_build_query($nextQuery)); ?>">Next</a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
     </div>
 </section>
 

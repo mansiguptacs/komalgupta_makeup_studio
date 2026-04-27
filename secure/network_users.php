@@ -124,7 +124,38 @@ $friendEndpoints = kg_parse_endpoints($friendEndpointsRaw);
 
 $friendResults = []; // each: ['url','label','users','error']
 $combinedByEmail = [];
+$localSourceLabel = 'buildinfra.me/kgmakeupstudio';
+// Add local users first so combined list always includes this site's users.
+foreach ($localUsers as $u) {
+    $emailKey = strtolower(trim((string)($u['email'] ?? '')));
+    if ($emailKey === '') {
+        continue;
+    }
+    $localName = trim((string)($u['name'] ?? ''));
+    if ($localName === '') {
+        $localName = trim((string)($u['first_name'] ?? '') . ' ' . (string)($u['last_name'] ?? ''));
+    }
+    $localJoined = (string)($u['joined_date'] ?? $u['joined'] ?? '');
 
+    if (!isset($combinedByEmail[$emailKey])) {
+        $combinedByEmail[$emailKey] = [
+            'name' => $localName,
+            'email' => (string)($u['email'] ?? ''),
+            'joined_date' => $localJoined,
+            'sources' => [$localSourceLabel],
+        ];
+    } else {
+        if (!in_array($localSourceLabel, $combinedByEmail[$emailKey]['sources'], true)) {
+            $combinedByEmail[$emailKey]['sources'][] = $localSourceLabel;
+        }
+        if (empty($combinedByEmail[$emailKey]['name']) && $localName !== '') {
+            $combinedByEmail[$emailKey]['name'] = $localName;
+        }
+        if (empty($combinedByEmail[$emailKey]['joined_date']) && $localJoined !== '') {
+            $combinedByEmail[$emailKey]['joined_date'] = $localJoined;
+        }
+    }
+}
 foreach ($friendEndpoints as $idx => $endpoint) {
     $host = parse_url($endpoint, PHP_URL_HOST) ?: ('Friend #' . ($idx + 1));
     $friendlyLabel = (string)$host;
@@ -163,6 +194,18 @@ foreach ($friendEndpoints as $idx => $endpoint) {
 }
 
 $combinedFriendUsers = array_values($combinedByEmail);
+$currentPageNumber = max(1, (int)($_GET['page'] ?? 1));
+$usersPerPage = 10;
+$totalUsers = count($combinedFriendUsers);
+$totalPages = max(1, (int)ceil($totalUsers / $usersPerPage));
+if ($currentPageNumber > $totalPages) {
+    $currentPageNumber = $totalPages;
+}
+$offset = ($currentPageNumber - 1) * $usersPerPage;
+$combinedFriendUsers = array_slice($combinedFriendUsers, $offset, $usersPerPage);
+$paginationQuery = [
+    'page' => $currentPageNumber,
+];
 ?>
 <section class="page-section">
   <div class="container">
@@ -170,28 +213,19 @@ $combinedFriendUsers = array_values($combinedByEmail);
       <h1>Users from Network</h1>
       <a href="users.php" class="btn btn-secondary">Back to Users</a>
     </div>
-    <p class="lead">Your users plus users fetched from your friend's site(s) using cURL.</p>
+    <p class="lead">Users fetched from my friend's site(s) using cURL.</p>
 
-    <h2 style="font-family:var(--font-heading);">Your users</h2>
-    <table class="user-table" style="width:100%; border-collapse:collapse; background:var(--color-surface); border:1px solid var(--color-border);">
-      <thead><tr style="background:var(--color-bg);"><th style="padding:.75rem; text-align:left;">Name</th><th style="padding:.75rem; text-align:left;">Email</th><th style="padding:.75rem; text-align:left;">Joined</th></tr></thead>
-      <tbody>
-        <?php foreach ($localUsers as $u): ?>
-          <tr><td style="padding:.75rem;"><?php echo htmlspecialchars($u['name'] ?? ''); ?></td><td style="padding:.75rem;"><?php echo htmlspecialchars($u['email'] ?? ''); ?></td><td style="padding:.75rem;"><?php echo htmlspecialchars($u['joined'] ?? ''); ?></td></tr>
-        <?php endforeach; ?>
-        <?php if (empty($localUsers)): ?><tr><td colspan="3" style="padding:.75rem;">No local users found.</td></tr><?php endif; ?>
-      </tbody>
-    </table>
-
-    <h2 style="font-family:var(--font-heading); margin-top:2rem;">Friend users (combined)</h2>
+    <div>
+    <h2 style="font-family:var(--font-heading); margin-top:2rem;">Users from Network(combined) - Total users: <?php echo (int)$totalUsers; ?></h2>
     <?php if (empty($friendEndpoints)): ?>
       <p class="message error">No friend API URLs configured. Set <code>friend_users_api</code> in <code>config/db_credentials.php</code> (comma/whitespace separated).</p>
     <?php endif; ?>
     <table class="user-table" style="width:100%; border-collapse:collapse; background:var(--color-surface); border:1px solid var(--color-border);">
-      <thead><tr style="background:var(--color-bg);"><th style="padding:.75rem; text-align:left;">Name</th><th style="padding:.75rem; text-align:left;">Email</th><th style="padding:.75rem; text-align:left;">Joined</th><th style="padding:.75rem; text-align:left;">From</th></tr></thead>
+      <thead><tr style="background:var(--color-bg);"><th style="padding:.75rem; text-align:left;">#</th><th style="padding:.75rem; text-align:left;">Name</th><th style="padding:.75rem; text-align:left;">Email</th><th style="padding:.75rem; text-align:left;">Joined</th><th style="padding:.75rem; text-align:left;">From</th></tr></thead>
       <tbody>
-        <?php foreach ($combinedFriendUsers as $u): ?>
+        <?php foreach ($combinedFriendUsers as $i=> $u): ?>
           <tr>
+          <td style="padding: 0.75rem 1rem;"><?php echo (int)($offset + $i + 1); ?></td>
             <td style="padding:.75rem;"><?php echo htmlspecialchars($u['name'] ?? ''); ?></td>
             <td style="padding:.75rem;"><?php echo htmlspecialchars($u['email'] ?? ''); ?></td>
             <td style="padding:.75rem;"><?php echo htmlspecialchars($u['joined_date'] ?? $u['joined'] ?? ''); ?></td>
@@ -201,6 +235,20 @@ $combinedFriendUsers = array_values($combinedByEmail);
         <?php if (empty($combinedFriendUsers)): ?><tr><td colspan="4" style="padding:.75rem;">No friend users available.</td></tr><?php endif; ?>
       </tbody>
     </table>
+    <?php if ($totalPages > 1): ?>
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                <?php if ($currentPageNumber > 1): ?>
+                    <?php $prevQuery = $paginationQuery; $prevQuery['page'] = $currentPageNumber - 1; ?>
+                    <a class="btn btn-secondary" href="network_users.php?<?php echo htmlspecialchars(http_build_query($prevQuery)); ?>">Previous</a>
+                <?php endif; ?>
+                <span style="color: var(--color-text-muted);">Page <?php echo (int)$currentPageNumber; ?> of <?php echo (int)$totalPages; ?></span>
+                <?php if ($currentPageNumber < $totalPages): ?>
+                    <?php $nextQuery = $paginationQuery; $nextQuery['page'] = $currentPageNumber + 1; ?>
+                    <a class="btn btn-secondary" href="network_users.php?<?php echo htmlspecialchars(http_build_query($nextQuery)); ?>">Next</a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+     </div>           
 
     <?php if (!empty($friendResults)): ?>
       <h2 style="font-family:var(--font-heading); margin-top:2rem;">Friend users (per site)</h2>
@@ -216,10 +264,11 @@ $combinedFriendUsers = array_values($combinedByEmail);
             <p class="message error" style="margin:.75rem 0 0;"><?php echo htmlspecialchars($res['error']); ?></p>
           <?php endif; ?>
           <table class="user-table" style="width:100%; margin-top:.75rem; border-collapse:collapse; background:transparent; border:1px solid var(--color-border);">
-            <thead><tr style="background:var(--color-bg);"><th style="padding:.6rem; text-align:left;">Name</th><th style="padding:.6rem; text-align:left;">Email</th><th style="padding:.6rem; text-align:left;">Joined</th></tr></thead>
+            <thead><tr style="background:var(--color-bg);"><th style="padding:.75rem; text-align:left;">#</th><th style="padding:.6rem; text-align:left;">Name</th><th style="padding:.6rem; text-align:left;">Email</th><th style="padding:.6rem; text-align:left;">Joined</th></tr></thead>
             <tbody>
-              <?php foreach ($res['users'] as $u): ?>
+            <?php foreach ($res['users'] as $ind => $u): ?>
                 <tr>
+                  <td style="padding: 0.75rem 1rem;"><?php echo (int)($offset + $ind + 1); ?></td>
                   <td style="padding:.6rem;"><?php echo htmlspecialchars($u['name'] ?? ''); ?></td>
                   <td style="padding:.6rem;"><?php echo htmlspecialchars($u['email'] ?? ''); ?></td>
                   <td style="padding:.6rem;"><?php echo htmlspecialchars($u['joined_date'] ?? ''); ?></td>
