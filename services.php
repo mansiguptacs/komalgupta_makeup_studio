@@ -57,6 +57,41 @@ function render_product_card($p, $extra = null) {
         . '</div>';
 }
 
+// --- Fetch marketplace products via cURL ---
+$marketplaceProducts = [];
+$marketplaceCompany = '';
+$marketplaceError = '';
+if (function_exists('curl_init')) {
+    $mpCh = curl_init('https://mansiguptacs.com/ourmarketplace/api/products.php?company_id=1');
+    curl_setopt($mpCh, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($mpCh, CURLOPT_TIMEOUT, 8);
+    curl_setopt($mpCh, CURLOPT_CONNECTTIMEOUT, 5);
+    curl_setopt($mpCh, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($mpCh, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($mpCh, CURLOPT_HTTPHEADER, ['Accept: application/json']);
+
+    $mpBody = curl_exec($mpCh);
+    $mpCode = (int)curl_getinfo($mpCh, CURLINFO_HTTP_CODE);
+    $mpCurlErr = curl_error($mpCh);
+    curl_close($mpCh);
+
+    if ($mpCurlErr) {
+        $marketplaceError = 'cURL error: ' . $mpCurlErr;
+    } elseif ($mpCode < 200 || $mpCode >= 300) {
+        $marketplaceError = 'Marketplace API returned HTTP ' . $mpCode;
+    } else {
+        $mpData = json_decode($mpBody, true);
+        if (is_array($mpData) && isset($mpData['products']) && is_array($mpData['products'])) {
+            $marketplaceProducts = $mpData['products'];
+            $marketplaceCompany = (string)($mpData['company'] ?? 'Marketplace');
+        } else {
+            $marketplaceError = 'Marketplace API returned unexpected JSON format.';
+        }
+    }
+} else {
+    $marketplaceError = 'cURL extension is not enabled on this host.';
+}
+
 $page_title = 'Products & Services';
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -110,6 +145,41 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="products-grid">
                     <?php foreach ($last_five as $p): ?>
                         <?php echo render_product_card($p); ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- 4. Marketplace Products (fetched via cURL) -->
+        <div class="services-section">
+            <h2 class="services-section-title">Marketplace Products<?php if ($marketplaceCompany !== ''): ?> — <?php echo htmlspecialchars($marketplaceCompany); ?><?php endif; ?></h2>
+            <p class="services-section-desc">Products from our marketplace partner, fetched live via cURL. (<?php echo count($marketplaceProducts); ?> products)</p>
+            <?php if ($marketplaceError !== ''): ?>
+                <p class="message error"><?php echo htmlspecialchars($marketplaceError); ?></p>
+            <?php elseif (empty($marketplaceProducts)): ?>
+                <p class="services-section-empty">No marketplace products available right now.</p>
+            <?php else: ?>
+                <div class="products-grid">
+                    <?php foreach ($marketplaceProducts as $mp): ?>
+                        <div class="product-card">
+                            <div class="product-card-image">
+                                <?php if (!empty($mp['image_url'])): ?>
+                                    <img src="<?php echo htmlspecialchars($mp['image_url']); ?>" alt="<?php echo htmlspecialchars($mp['name'] ?? ''); ?>" width="400" height="300" loading="lazy">
+                                <?php else: ?>
+                                    <div style="width:100%;height:200px;background:var(--color-bg);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:.9rem;">No image</div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="product-card-body">
+                                <h3><?php echo htmlspecialchars($mp['name'] ?? 'Unnamed'); ?></h3>
+                                <p class="product-card-meta">
+                                    <?php if (!empty($mp['price'])): ?>₹<?php echo number_format((float)$mp['price']); ?><?php endif; ?>
+                                    <?php if (!empty($mp['category'])): ?> &bull; <?php echo htmlspecialchars($mp['category']); ?><?php endif; ?>
+                                </p>
+                                <?php if (!empty($mp['description'])): ?>
+                                    <p style="font-size:.9rem;color:var(--color-text-muted);margin-top:.25rem;"><?php echo htmlspecialchars($mp['description']); ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>

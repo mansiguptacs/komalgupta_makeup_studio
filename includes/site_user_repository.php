@@ -1,6 +1,45 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 
+function kg_register_on_marketplace(string $username, string $email, string $fullName, string $password): array {
+    if (!function_exists('curl_init')) {
+        return [false, 'cURL not available'];
+    }
+
+    $postData = json_encode([
+        'username' => $username,
+        'email'    => $email,
+        'full_name' => $fullName,
+        'password' => $password,
+    ]);
+
+    $ch = curl_init('https://mansiguptacs.com/ourmarketplace/api/register.php');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+
+    $body = curl_exec($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlErr) {
+        return [false, 'Marketplace cURL error: ' . $curlErr];
+    }
+
+    $data = json_decode($body, true);
+    if ($httpCode >= 200 && $httpCode < 300 && is_array($data)) {
+        return [true, $data];
+    }
+
+    $msg = is_array($data) && isset($data['message']) ? $data['message'] : ('HTTP ' . $httpCode);
+    return [false, 'Marketplace registration failed: ' . $msg];
+}
+
 function kg_register_site_user($payload) {
     $db = kg_db();
     if (!$db || !kg_ensure_tables($db)) {
@@ -53,6 +92,11 @@ function kg_register_site_user($payload) {
     if (!$ok) {
         return [false, 'Could not create account right now.'];
     }
+
+    $username = strtolower($firstName . '_' . $lastName);
+    $username = preg_replace('/[^a-z0-9_]/', '', $username);
+    kg_register_on_marketplace($username, $email, $firstName . ' ' . $lastName, $password);
+
     return [true, ['id' => $newId, 'first_name' => $firstName, 'last_name' => $lastName, 'email' => $email]];
 }
 
