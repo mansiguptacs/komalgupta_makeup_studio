@@ -51,7 +51,7 @@ require_once __DIR__ . '/includes/header.php';
         var img = entry.image
             ? '<img src="' + escapeHtml(entry.image) + '" alt="' + escapeHtml(entry.name || '') + '" width="400" height="300" loading="lazy">'
             : '<div style="width:100%;height:200px;background:var(--color-bg);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:.9rem;">No image</div>';
-        var price = (entry.price != null && entry.price !== '') ? '₹' + Number(entry.price).toLocaleString('en-IN') : '';
+        var price = (entry.price != null && entry.price !== '') ? '$' + Number(entry.price).toLocaleString('en-IN') : '';
         var category = entry.category ? ' &bull; ' + escapeHtml(entry.category) : '';
         var duration = entry.duration ? ' &bull; ' + escapeHtml(entry.duration) : '';
         var sourceBadge = entry.type === 'marketplace'

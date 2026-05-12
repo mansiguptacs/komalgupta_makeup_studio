@@ -168,7 +168,7 @@ require_once __DIR__ . '/includes/header.php';
         }
         nameEl.textContent = product.name || 'Unnamed product';
         categoryEl.textContent = product.category || '';
-        priceEl.textContent = (product.price != null && product.price !== '') ? ('₹' + Number(product.price).toLocaleString('en-IN')) : '';
+        priceEl.textContent = (product.price != null && product.price !== '') ? ('$' + Number(product.price).toLocaleString('en-IN')) : '';
 
         var avg = parseFloat(product.avg_rating || 0);
         var reviewCount = parseInt(product.review_count || 0, 10);

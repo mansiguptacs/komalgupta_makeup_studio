@@ -223,7 +223,7 @@ require_once __DIR__ . '/includes/header.php';
                 + '</p>';
         }
 
-        var price = (mp.price != null && mp.price !== '') ? '₹' + Number(mp.price).toLocaleString('en-IN') : '';
+        var price = (mp.price != null && mp.price !== '') ? '$' + Number(mp.price).toLocaleString('en-IN') : '';
         var category = mp.category ? ' &bull; ' + escapeHtml(mp.category) : '';
 
         var descText = (mp.description || '').toString();
