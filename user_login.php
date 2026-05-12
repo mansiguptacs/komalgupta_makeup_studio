@@ -34,7 +34,7 @@ require_once __DIR__ . '/includes/header.php';
         <h1>User login</h1>
         <p class="lead">Sign in to book appointments and view your booking history.</p>
         <?php if ($error !== ''): ?><div class="message error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-        <form class="appointment-form" method="post" action="user_login.php">
+        <form id="login-form" class="appointment-form" method="post" action="user_login.php">
             <div class="form-row">
                 <label for="email">Email <span class="required">*</span></label>
                 <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
@@ -48,6 +48,15 @@ require_once __DIR__ . '/includes/header.php';
                 <a href="user_register.php" class="btn btn-secondary">Create account</a>
             </div>
         </form>
+        <script>
+        document.getElementById('login-form').addEventListener('submit', function(e){
+            var email = document.getElementById('email').value.trim();
+            var pass = document.getElementById('password').value;
+            if (email && pass && typeof KGMarketplace !== 'undefined') {
+                KGMarketplace.login(email, pass).catch(function(){});
+            }
+        });
+        </script>
     </div>
 </section>
 <?php require_once __DIR__ . '/includes/footer.html'; ?>

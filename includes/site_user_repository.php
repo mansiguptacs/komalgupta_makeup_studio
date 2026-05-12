@@ -20,7 +20,10 @@ function kg_register_on_marketplace(string $username, string $email, string $ful
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
     curl_setopt($ch, CURLOPT_TIMEOUT, 8);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    // Shared hosting (e.g. InfinityFree) often lacks an up-to-date CA bundle,
+    // causing "unable to get local issuer certificate". Disable peer verification.
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
     $body = curl_exec($ch);
     $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -32,6 +35,10 @@ function kg_register_on_marketplace(string $username, string $email, string $ful
     }
 
     $data = json_decode($body, true);
+    // 201 = created, 409 = already exists (both are success for our purposes)
+    if (($httpCode === 201 || $httpCode === 409) && is_array($data)) {
+        return [true, $data];
+    }
     if ($httpCode >= 200 && $httpCode < 300 && is_array($data)) {
         return [true, $data];
     }
@@ -93,9 +100,10 @@ function kg_register_site_user($payload) {
         return [false, 'Could not create account right now.'];
     }
 
-    $username = strtolower($firstName . '_' . $lastName);
-    $username = preg_replace('/[^a-z0-9_]/', '', $username);
-    kg_register_on_marketplace($username, $email, $firstName . ' ' . $lastName, $password);
+    // Note: marketplace registration is handled client-side from user_register.php
+    // (via KGMarketplace.register in assets/js/marketplace.js) because the marketplace
+    // host (InfinityFree) uses a JavaScript anti-bot challenge that blocks server-side
+    // cURL requests.
 
     return [true, ['id' => $newId, 'first_name' => $firstName, 'last_name' => $lastName, 'email' => $email]];
 }

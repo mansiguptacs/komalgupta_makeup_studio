@@ -79,4 +79,20 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </section>
 
+<script>
+(function(){
+    if (typeof KGMarketplace === 'undefined') return;
+    KGMarketplace.recordVisit({
+        type: 'local',
+        slug: <?php echo json_encode($product['slug']); ?>,
+        name: <?php echo json_encode($product['name']); ?>,
+        image: <?php echo json_encode($product['image']); ?>,
+        price: <?php echo json_encode((float)$product['price']); ?>,
+        category: <?php echo json_encode($product['category']); ?>,
+        duration: <?php echo json_encode($product['duration']); ?>,
+        href: 'product.php?slug=' + encodeURIComponent(<?php echo json_encode($product['slug']); ?>)
+    });
+})();
+</script>
+
 <?php require_once __DIR__ . '/includes/footer.html'; ?>

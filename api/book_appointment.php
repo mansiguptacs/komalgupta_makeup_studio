@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (file_exists($file)) {
             $apps = json_decode(file_get_contents($file), true) ?: [];
         }
-        $apps[] = [
+        $booking = [
             'booking_id' => uniqid(),
             'name' => trim($data['name'] ?? ''),
             'email' => trim($data['email'] ?? ''),
@@ -27,8 +27,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'service' => trim($data['service'] ?? ''),
             'message' => trim($data['message'] ?? ''),
             'status' => 'Pending',
+            'source' => trim($data['source'] ?? 'website'),
             'created_at' => date('Y-m-d H:i:s')
         ];
+
+        // Optional marketplace metadata - recorded when the booking originates
+        // from a marketplace-authenticated user on view_product.php
+        if (!empty($data['marketplace_user_id'])) {
+            $booking['marketplace_user_id'] = (int)$data['marketplace_user_id'];
+        }
+        if (!empty($data['marketplace_username'])) {
+            $booking['marketplace_username'] = trim((string)$data['marketplace_username']);
+        }
+        if (!empty($data['product_id'])) {
+            $booking['marketplace_product_id'] = (int)$data['product_id'];
+        }
+        if (!empty($data['product_name'])) {
+            $booking['marketplace_product_name'] = trim((string)$data['product_name']);
+        }
+
+        $apps[] = $booking;
         file_put_contents($file, json_encode($apps, JSON_PRETTY_PRINT));
         
         echo json_encode(['success' => true, 'message' => 'Appointment request received.']);

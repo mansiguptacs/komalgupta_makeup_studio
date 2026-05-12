@@ -29,7 +29,14 @@ $base = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/secure/') !== false) ? '../' : 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo $base; ?>assets/css/style.css">
+    <?php
+    $mpJsPath = __DIR__ . '/../assets/js/marketplace.js';
+    $mpJsVer = file_exists($mpJsPath) ? filemtime($mpJsPath) : time();
+    $cssPath = __DIR__ . '/../assets/css/style.css';
+    $cssVer = file_exists($cssPath) ? filemtime($cssPath) : time();
+    ?>
+    <link rel="stylesheet" href="<?php echo $base; ?>assets/css/style.css?v=<?php echo $cssVer; ?>">
+    <script src="<?php echo $base; ?>assets/js/marketplace.js?v=<?php echo $mpJsVer; ?>"></script>
 </head>
 <body>
     <header class="site-header">

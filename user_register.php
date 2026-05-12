@@ -38,7 +38,7 @@ require_once __DIR__ . '/includes/header.php';
         <?php if ($message !== ''): ?><div class="message success"><?php echo htmlspecialchars($message); ?></div><?php endif; ?>
         <?php if ($error !== ''): ?><div class="message error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
 
-        <form class="appointment-form" method="post" action="user_register.php">
+        <form id="register-form" class="appointment-form" method="post" action="user_register.php">
             <div class="form-row">
                 <label for="first_name">First Name <span class="required">*</span></label>
                 <input type="text" id="first_name" name="first_name" required value="<?php echo htmlspecialchars($_POST['first_name'] ?? ''); ?>">
@@ -72,6 +72,21 @@ require_once __DIR__ . '/includes/header.php';
                 <a href="user_login.php" class="btn btn-secondary">Already have an account?</a>
             </div>
         </form>
+        <script>
+        document.getElementById('register-form').addEventListener('submit', function(e){
+            if (typeof KGMarketplace === 'undefined') return;
+            var firstName = document.getElementById('first_name').value.trim();
+            var lastName = document.getElementById('last_name').value.trim();
+            var email = document.getElementById('email').value.trim();
+            var pass = document.getElementById('password').value;
+            var username = (firstName + '_' + lastName).toLowerCase().replace(/[^a-z0-9_]/g, '');
+            var fullName = firstName + ' ' + lastName;
+
+            KGMarketplace.register(username, email, fullName, pass)
+                .then(function(){ return KGMarketplace.login(email, pass); })
+                .catch(function(){});
+        });
+        </script>
     </div>
 </section>
 <?php require_once __DIR__ . '/includes/footer.html'; ?>

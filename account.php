@@ -68,8 +68,82 @@ require_once __DIR__ . '/includes/header.php';
                     <a class="btn btn-secondary" href="login.php">Admin login</a>
                 </article>
             <?php endif; ?>
+
+            <!-- Marketplace account -->
+            <article class="account-card" id="mp-account-card">
+                <h2>Marketplace</h2>
+                <div id="mp-status-area">
+                    <p style="color:var(--color-text-muted);">Checking marketplace status...</p>
+                </div>
+            </article>
         </div>
     </div>
 </section>
+
+<!-- Marketplace Login Modal -->
+<div id="mp-auth-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);overflow-y:auto;">
+    <div style="max-width:420px;margin:4rem auto;background:var(--color-surface);border-radius:12px;padding:2rem;position:relative;box-shadow:0 16px 48px rgba(0,0,0,0.15);">
+        <button id="mp-auth-close" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--color-text-muted);">&times;</button>
+        <h2 style="font-family:var(--font-heading);margin:0 0 1rem;">Marketplace Login</h2>
+        <div id="mp-auth-msg" class="message" style="display:none;margin-bottom:1rem;"></div>
+        <form id="mp-login-form" class="appointment-form" style="margin:0;">
+            <div class="form-row"><label for="mp-login-user">Username or Email</label><input type="text" id="mp-login-user" required></div>
+            <div class="form-row"><label for="mp-login-pass">Password</label><input type="password" id="mp-login-pass" required></div>
+            <div class="form-actions" style="gap:.5rem;">
+                <button type="submit" class="btn btn-primary">Login to Marketplace</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function(){
+    var statusArea = document.getElementById('mp-status-area');
+    var modal = document.getElementById('mp-auth-modal');
+    var closeBtn = document.getElementById('mp-auth-close');
+    var loginForm = document.getElementById('mp-login-form');
+    var msgEl = document.getElementById('mp-auth-msg');
+
+    function renderStatus(user) {
+        if (user && user.full_name) {
+            statusArea.innerHTML = '<p>Signed in to marketplace as <strong>' + user.full_name + '</strong>' + (user.email ? ' (' + user.email + ')' : '') + '.</p>'
+                + '<button class="btn btn-secondary" id="mp-logout-btn">Marketplace Logout</button>';
+            document.getElementById('mp-logout-btn').addEventListener('click', function(){
+                KGMarketplace.logout();
+                renderStatus(null);
+            });
+        } else {
+            statusArea.innerHTML = '<p>Connect your account to the marketplace to access shared products and reviews.</p>'
+                + '<button class="btn btn-primary" id="mp-open-login">Login to Marketplace</button>';
+            document.getElementById('mp-open-login').addEventListener('click', function(){
+                modal.style.display = 'block';
+            });
+        }
+    }
+
+    KGMarketplace.verify().then(renderStatus).catch(function(){ renderStatus(null); });
+
+    if (loginForm) loginForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        msgEl.style.display = 'none';
+        var user = document.getElementById('mp-login-user').value.trim();
+        var pass = document.getElementById('mp-login-pass').value;
+        KGMarketplace.login(user, pass).then(function(r){
+            if (r.success) {
+                msgEl.className = 'message success'; msgEl.textContent = 'Logged in!'; msgEl.style.display = 'block';
+                renderStatus(r.user);
+                setTimeout(function(){ modal.style.display = 'none'; }, 800);
+            } else {
+                msgEl.className = 'message error'; msgEl.textContent = r.error || 'Login failed.'; msgEl.style.display = 'block';
+            }
+        }).catch(function(){
+            msgEl.className = 'message error'; msgEl.textContent = 'Network error.'; msgEl.style.display = 'block';
+        });
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', function(){ modal.style.display = 'none'; });
+    if (modal) modal.addEventListener('click', function(e){ if (e.target === modal) modal.style.display = 'none'; });
+})();
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.html'; ?>
