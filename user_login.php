@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/site_user_auth.php';
 require_once __DIR__ . '/includes/site_user_repository.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/sso_client.php';
 
 if (kg_site_user_is_logged_in()) {
     header('Location: user_dashboard.php');
@@ -46,6 +47,10 @@ require_once __DIR__ . '/includes/header.php';
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Login</button>
                 <a href="user_register.php" class="btn btn-secondary">Create account</a>
+            </div>
+            <p class="lead" style="margin-top:1.25rem;">Or sign in with your <strong>Our Marketplace</strong> account (single sign-on):</p>
+            <div class="form-actions">
+                <a class="btn btn-secondary" href="<?php echo htmlspecialchars(kg_sso_authorize_url(), ENT_QUOTES, 'UTF-8'); ?>">Sign in with Our Marketplace</a>
             </div>
         </form>
         <script>

@@ -29,7 +29,8 @@ require_once __DIR__ . '/includes/header.php';
         <h1>Welcome, <?php echo htmlspecialchars($user['name']); ?></h1>
         <p class="lead">Book appointments and view your previous/upcoming bookings.</p>
 
-        <?php if (isset($_GET['welcome'])): ?><div class="message success">Account setup complete. You can book now.</div><?php endif; ?>
+        <?php if (($_GET['welcome'] ?? '') === 'sso'): ?><div class="message success">You are signed in with Our Marketplace. You can book appointments below.</div><?php endif; ?>
+        <?php if (isset($_GET['welcome']) && ($_GET['welcome'] ?? '') !== 'sso'): ?><div class="message success">Account setup complete. You can book now.</div><?php endif; ?>
         <?php if ($success !== ''): ?><div class="message success"><?php echo htmlspecialchars($success); ?></div><?php endif; ?>
         <?php if ($error !== ''): ?><div class="message error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
 

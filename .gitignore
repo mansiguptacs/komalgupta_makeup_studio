@@ -1,2 +1,3 @@
 config/db_credentials.php
 config/db_credentials.local.php
+config/sso_credentials.local.php

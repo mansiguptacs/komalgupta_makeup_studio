@@ -17,8 +17,12 @@ $isUserLoggedIn = kg_site_user_is_logged_in();
 $isAdmin = isAdminLoggedIn();
 $profileActivePages = ['account', 'user_login', 'user_register', 'user_dashboard', 'user_reviews', 'login'];
 $isProfileActive = in_array($current_page, $profileActivePages, true);
-// When included from secure/, links must go up one level
-$base = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/secure/') !== false) ? '../' : '';
+// When included from secure/ or sso/, links must go up one level
+$scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+$base = '';
+if (strpos($scriptName, '/secure/') !== false || strpos($scriptName, '/sso/') !== false) {
+    $base = '../';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,6 +46,17 @@ $base = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/secure/') !== false) ? '../' : 
     data-site-user-loggedin="<?php echo $isUserLoggedIn ? '1' : '0'; ?>"
     data-site-user-name="<?php echo htmlspecialchars((string)(kg_site_user()['name'] ?? '')); ?>"
     data-is-admin="<?php echo $isAdmin ? '1' : '0'; ?>">
+    <?php
+    if (!empty($_SESSION['marketplace_token_pending_sync']) && is_string($_SESSION['marketplace_token_pending_sync'])) {
+        $mpTok = $_SESSION['marketplace_token_pending_sync'];
+        unset($_SESSION['marketplace_token_pending_sync']);
+        ?>
+    <script>
+    (function () {
+        try { localStorage.setItem('marketplace_token', <?php echo json_encode($mpTok); ?>); } catch (e) {}
+    })();
+    </script>
+    <?php } ?>
     <header class="site-header">
         <div class="container header-inner">
             <a href="<?php echo $base; ?>index.php" class="logo">

@@ -178,6 +178,81 @@ function kg_authenticate_site_user($email, $password) {
     return [true, ['id' => (int)$row['id'], 'first_name' => (string)($row['first_name'] ?? ''), 'last_name' => (string)($row['last_name'] ?? ''), 'email' => $row['email']]];
 }
 
+/**
+ * Find or create a site_users row for an OurMarketplace SSO identity so dashboard
+ * bookings and reviews keep a stable numeric user_id (FK on user_bookings / reviews).
+ *
+ * @return array Tuple: [bool success, ?array userRow, string errorMessage]
+ */
+function kg_sso_upsert_site_user_from_marketplace(int $marketplaceUserId, string $username, string $fullName): array {
+    $db = kg_db();
+    if (!$db || !kg_ensure_tables($db)) {
+        return [false, null, 'Database is not configured.'];
+    }
+
+    $username = trim($username);
+    $fullName = trim($fullName);
+    if ($username === '') {
+        $username = 'user' . $marketplaceUserId;
+    }
+
+    $email = 'mp-' . $marketplaceUserId . '@sso.kgmakeupstudio.local';
+    $parts = preg_split('/\s+/', $fullName, 2, PREG_SPLIT_NO_EMPTY);
+    $firstName = isset($parts[0]) ? (string)$parts[0] : $username;
+    $lastName = isset($parts[1]) ? (string)$parts[1] : '';
+
+    $stmt = $db->prepare('SELECT id, first_name, last_name, email FROM site_users WHERE email = ? LIMIT 1');
+    if (!$stmt) {
+        return [false, null, 'Could not look up SSO user.'];
+    }
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $row = $res ? $res->fetch_assoc() : null;
+    $stmt->close();
+
+    if ($row) {
+        $id = (int)$row['id'];
+        $upd = $db->prepare('UPDATE site_users SET first_name = ?, last_name = ?, last_logged_in = NOW() WHERE id = ?');
+        if ($upd) {
+            $upd->bind_param('ssi', $firstName, $lastName, $id);
+            $upd->execute();
+            $upd->close();
+        }
+        return [true, [
+            'id' => $id,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => (string)$row['email'],
+        ], ''];
+    }
+
+    $passwordHash = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+    $joinedDate = date('Y-m-d');
+    $cellPhone = '';
+    $homePhone = '';
+    $homeAddress = '';
+
+    $ins = $db->prepare('INSERT INTO site_users (first_name, last_name, email, password, home_address, home_phone, cell_phone, joined_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+    if (!$ins) {
+        return [false, null, 'Could not create SSO-linked site user.'];
+    }
+    $ins->bind_param('ssssssss', $firstName, $lastName, $email, $passwordHash, $homeAddress, $homePhone, $cellPhone, $joinedDate);
+    if (!$ins->execute()) {
+        $ins->close();
+        return [false, null, 'Could not create SSO-linked site user.'];
+    }
+    $newId = (int)$ins->insert_id;
+    $ins->close();
+
+    return [true, [
+        'id' => $newId,
+        'first_name' => $firstName,
+        'last_name' => $lastName,
+        'email' => $email,
+    ], ''];
+}
+
 function kg_get_services_catalog() {
     $file = dirname(__DIR__) . '/data/services.csv';
     return kg_read_csv_assoc($file);

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/site_user_auth.php';
+require_once __DIR__ . '/includes/sso_client.php';
 $page_title = 'Book Appointment';
 
 // Single studio location
@@ -215,7 +216,8 @@ require_once __DIR__ . '/includes/header.php';
             statusEl.innerHTML =
                 '<p style="margin:0 0 .5rem;">Optional: log in to track your bookings later. '
                 + 'Either login below works \u2014 you only need one.</p>'
-                + '<button type="button" id="auth-mp-login" class="btn btn-primary" style="padding:.35rem .9rem;font-size:.85rem;margin-right:.5rem;">Login with Marketplace</button>'
+                + '<a class="btn btn-primary" style="padding:.35rem .9rem;font-size:.85rem;margin-right:.5rem;display:inline-block;" href="<?php echo htmlspecialchars(kg_sso_authorize_url(), ENT_QUOTES, 'UTF-8'); ?>">Sign in with Our Marketplace</a>'
+                + '<button type="button" id="auth-mp-login" class="btn btn-primary" style="padding:.35rem .9rem;font-size:.85rem;margin-right:.5rem;">Marketplace login (browser)</button>'
                 + '<a class="btn btn-secondary" style="padding:.35rem .9rem;font-size:.85rem;" href="user_login.php">Login with site account</a>'
                 + ' <span style="color:var(--color-text-muted);font-size:.85rem;margin-left:.5rem;">'
                 + 'or <a href="user_register.php">create a site account</a></span>';

@@ -23,6 +23,7 @@ function kg_site_user_login($userRow) {
 
 function kg_site_user_logout() {
     unset($_SESSION['site_user']);
+    unset($_SESSION['marketplace_token_pending_sync']);
 }
 
 function kg_require_site_user($redirect = 'user_login.php') {
