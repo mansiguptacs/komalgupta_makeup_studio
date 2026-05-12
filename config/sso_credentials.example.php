@@ -5,6 +5,8 @@
  *
  * For local development, register a matching redirect_url in OurMarketplace (e.g.
  * http://localhost/komalgupta_makeup_studio/sso/callback.php) and set redirect_url here.
+ *
+ * Optional keys: marketplace_register_url (defaults to provider_base + /auth/register.php)
  */
 return [
     'app_secret' => 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',

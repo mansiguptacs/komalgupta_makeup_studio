@@ -28,6 +28,19 @@ function kg_sso_authorize_url(): string {
     ]);
 }
 
+/** Web registration on OurMarketplace (customers create accounts there, then use SSO here). */
+function kg_sso_marketplace_register_url(): string {
+    $c = kg_sso_config();
+    if (!empty($c['marketplace_register_url']) && is_string($c['marketplace_register_url'])) {
+        return (string)$c['marketplace_register_url'];
+    }
+    $base = rtrim((string)($c['provider_base'] ?? ''), '/');
+    if ($base === '') {
+        return '#';
+    }
+    return $base . '/auth/register.php';
+}
+
 /**
  * Exchange an authorization code for token + user (id, username, full_name).
  * @return array Tuple: [bool success, ?array payload, string errorMessage]

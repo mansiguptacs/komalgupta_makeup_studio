@@ -15,7 +15,7 @@ if (empty($page_title) || !is_string($page_title)) {
 }
 $isUserLoggedIn = kg_site_user_is_logged_in();
 $isAdmin = isAdminLoggedIn();
-$profileActivePages = ['account', 'user_login', 'user_register', 'user_dashboard', 'user_reviews', 'login'];
+$profileActivePages = ['account', 'user_login', 'user_register', 'user_dashboard', 'user_reviews', 'login', 'start'];
 $isProfileActive = in_array($current_page, $profileActivePages, true);
 // When included from secure/ or sso/, links must go up one level
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
@@ -57,6 +57,19 @@ if (strpos($scriptName, '/secure/') !== false || strpos($scriptName, '/sso/') !=
     })();
     </script>
     <?php } ?>
+    <?php
+    if (!empty($_SESSION['clear_marketplace_token_js'])) {
+        unset($_SESSION['clear_marketplace_token_js']);
+        ?>
+    <script>
+    (function () {
+        try { localStorage.removeItem('marketplace_token'); } catch (e) {}
+        if (typeof KGMarketplace !== 'undefined' && KGMarketplace.logout) {
+            KGMarketplace.logout();
+        }
+    })();
+    </script>
+    <?php } ?>
     <header class="site-header">
         <div class="container header-inner">
             <a href="<?php echo $base; ?>index.php" class="logo">
@@ -92,25 +105,5 @@ if (strpos($scriptName, '/secure/') !== false || strpos($scriptName, '/sso/') !=
             </a>
         </div>
     </header>
-
-    <script>
-    (function () {
-        if (typeof KGMarketplace === 'undefined' || !KGMarketplace.onAuthReady) return;
-        var body = document.body;
-        var siteLoggedIn = body.getAttribute('data-site-user-loggedin') === '1';
-        var isAdmin     = body.getAttribute('data-is-admin') === '1';
-        // If the site already has a session (or admin), don't override.
-        if (siteLoggedIn || isAdmin) return;
-
-        KGMarketplace.onAuthReady(function (user) {
-            if (!user) return;
-            var navText = document.querySelector('.profile-nav-link .profile-nav-text');
-            if (navText) navText.textContent = user.full_name || user.username || 'My Account';
-            // Hint for any page-level scripts that want to react.
-            body.setAttribute('data-mp-user-loggedin', '1');
-            body.setAttribute('data-mp-user-name', user.full_name || user.username || '');
-        });
-    })();
-    </script>
 
     <main class="main-content">

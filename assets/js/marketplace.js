@@ -51,37 +51,6 @@ var KGMarketplace = (function () {
             .then(function (r) { return r.data; });
     }
 
-    function register(username, email, fullName, password) {
-        return fetchJSON(API_BASE + '/register.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: username,
-                email: email,
-                full_name: fullName,
-                password: password
-            })
-        }).then(function (r) {
-            // 201 = created, 409 = already exists — both fine
-            return { success: r.status === 201 || r.status === 409, data: r.data, status: r.status };
-        });
-    }
-
-    function login(username, password) {
-        return fetchJSON(API_BASE + '/login.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: username, password: password })
-        }).then(function (r) {
-            if (r.ok && r.data && r.data.token) {
-                localStorage.setItem(TOKEN_KEY, r.data.token);
-                return { success: true, user: r.data.user, token: r.data.token };
-            }
-            var msg = (r.data && r.data.error) ? r.data.error : 'Login failed';
-            return { success: false, error: msg };
-        });
-    }
-
     function verify() {
         var token = localStorage.getItem(TOKEN_KEY);
         if (!token) return Promise.resolve(null);
@@ -260,8 +229,6 @@ var KGMarketplace = (function () {
         loadProduct: loadProduct,
         loadProductDetail: loadProductDetail,
         loadReviews: loadReviews,
-        register: register,
-        login: login,
         verify: verify,
         logout: logout,
         getToken: getToken,

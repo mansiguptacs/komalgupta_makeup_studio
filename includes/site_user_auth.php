@@ -24,9 +24,11 @@ function kg_site_user_login($userRow) {
 function kg_site_user_logout() {
     unset($_SESSION['site_user']);
     unset($_SESSION['marketplace_token_pending_sync']);
+    unset($_SESSION['marketplace_user_id']);
+    unset($_SESSION['marketplace_username']);
 }
 
-function kg_require_site_user($redirect = 'user_login.php') {
+function kg_require_site_user($redirect = 'sso/start.php') {
     if (!kg_site_user_is_logged_in()) {
         header('Location: ' . $redirect);
         exit;
