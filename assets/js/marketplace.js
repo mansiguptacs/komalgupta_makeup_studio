@@ -51,6 +51,43 @@ var KGMarketplace = (function () {
             .then(function (r) { return r.data; });
     }
 
+    /**
+     * POST a review to OurMarketplace (same DB as marketplace product pages).
+     * Requires a Bearer token (SSO or api/login) in localStorage.
+     * @param {number} productId OurMarketplace products.id
+     * @param {number} rating Integer 1–5
+     * @param {string} reviewText Optional
+     */
+    function submitReview(productId, rating, reviewText) {
+        var token = localStorage.getItem(TOKEN_KEY);
+        if (!token) {
+            return Promise.reject(new Error('Sign in with Our Marketplace (Account) to post a review.'));
+        }
+        var rid = parseInt(productId, 10);
+        var stars = Math.round(parseFloat(rating));
+        if (rid <= 0 || stars < 1 || stars > 5) {
+            return Promise.reject(new Error('Invalid product or rating (use 1–5).'));
+        }
+        return fetchJSON(API_BASE + '/reviews.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                product_id: rid,
+                rating: stars,
+                review_text: (reviewText == null ? '' : String(reviewText)).trim()
+            })
+        }).then(function (r) {
+            if (!r.ok) {
+                var msg = (r.data && r.data.error) ? r.data.error : ('HTTP ' + r.status);
+                throw new Error(msg);
+            }
+            return r.data;
+        });
+    }
+
     function verify() {
         var token = localStorage.getItem(TOKEN_KEY);
         if (!token) return Promise.resolve(null);
@@ -229,6 +266,7 @@ var KGMarketplace = (function () {
         loadProduct: loadProduct,
         loadProductDetail: loadProductDetail,
         loadReviews: loadReviews,
+        submitReview: submitReview,
         verify: verify,
         logout: logout,
         getToken: getToken,

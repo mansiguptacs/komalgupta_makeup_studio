@@ -64,6 +64,7 @@ if (!$uok || !is_array($row)) {
 
 kg_site_user_login($row);
 $_SESSION['marketplace_token_pending_sync'] = $token;
+$_SESSION['marketplace_access_token'] = $token;
 $_SESSION['marketplace_user_id'] = $mpId;
 $_SESSION['marketplace_username'] = $mpUsername;
 

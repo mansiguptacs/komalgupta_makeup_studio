@@ -24,6 +24,7 @@ function kg_site_user_login($userRow) {
 function kg_site_user_logout() {
     unset($_SESSION['site_user']);
     unset($_SESSION['marketplace_token_pending_sync']);
+    unset($_SESSION['marketplace_access_token']);
     unset($_SESSION['marketplace_user_id']);
     unset($_SESSION['marketplace_username']);
 }

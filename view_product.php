@@ -10,6 +10,9 @@ if ($productId <= 0) {
     exit;
 }
 
+require_once __DIR__ . '/includes/site_user_auth.php';
+$kg_site_logged_in = kg_site_user_is_logged_in();
+
 $page_title = 'Product';
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -49,6 +52,29 @@ require_once __DIR__ . '/includes/header.php';
             <div id="mp-detail-rating-breakdown" style="margin-bottom:1.25rem;"></div>
             <div id="mp-detail-reviews"></div>
         </div>
+
+        <div id="mp-review-write-card" style="display:none;margin-top:2rem;padding:1.25rem;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-alt, #fafafa);">
+            <h3 style="font-family:var(--font-heading);margin-top:0;">Write a review</h3>
+            <p id="mp-review-write-hint" style="color:var(--color-text-muted);font-size:.95rem;margin-bottom:1rem;"></p>
+            <form id="mp-review-form" style="display:none;">
+                <div class="form-row" style="margin-bottom:1rem;">
+                    <label for="mp-review-rating" style="display:block;margin-bottom:.35rem;font-weight:600;">Rating <span class="required">*</span> (1–5)</label>
+                    <select id="mp-review-rating" name="rating" required style="max-width:12rem;padding:.4rem;">
+                        <option value="5">5 — Excellent</option>
+                        <option value="4">4</option>
+                        <option value="3">3</option>
+                        <option value="2">2</option>
+                        <option value="1">1</option>
+                    </select>
+                </div>
+                <div class="form-row" style="margin-bottom:1rem;">
+                    <label for="mp-review-text" style="display:block;margin-bottom:.35rem;font-weight:600;">Your review</label>
+                    <textarea id="mp-review-text" name="review_text" rows="4" style="width:100%;max-width:36rem;padding:.5rem;" placeholder="Share your experience…"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="mp-review-submit">Submit review</button>
+                <p id="mp-review-msg" style="margin-top:.75rem;font-size:.9rem;" aria-live="polite"></p>
+            </form>
+        </div>
     </div>
 </section>
 
@@ -57,6 +83,7 @@ require_once __DIR__ . '/includes/header.php';
     try {
     console.log('[MP Detail] script start');
     var productId = <?php echo json_encode($productId); ?>;
+    var siteUserLoggedIn = <?php echo $kg_site_logged_in ? 'true' : 'false'; ?>;
     console.log('[MP Detail] productId =', productId, 'KGMarketplace =', typeof KGMarketplace);
 
     if (typeof KGMarketplace === 'undefined') {
@@ -146,6 +173,61 @@ require_once __DIR__ . '/includes/header.php';
     function showError(msg){
         statusEl.innerHTML = '<p class="message error">' + escapeHtml(msg) + '</p>';
     }
+
+    function setupMpReviewForm() {
+        var writeCard = document.getElementById('mp-review-write-card');
+        var form = document.getElementById('mp-review-form');
+        var hint = document.getElementById('mp-review-write-hint');
+        var msg = document.getElementById('mp-review-msg');
+        if (!writeCard || !form || !hint || !KGMarketplace.onAuthReady) {
+            return;
+        }
+        var submitBound = false;
+        KGMarketplace.onAuthReady(function (mpUser) {
+            writeCard.style.display = 'block';
+            if (!siteUserLoggedIn) {
+                hint.textContent = 'Sign in with your customer account (Our Marketplace) to post a review. It will appear on this page and on the main marketplace.';
+                form.style.display = 'none';
+                return;
+            }
+            if (!mpUser) {
+                hint.innerHTML = 'Open <a href="account.php">Account</a> and use &ldquo;Sign in with Our Marketplace&rdquo; so we can save your review to the marketplace.';
+                form.style.display = 'none';
+                return;
+            }
+            hint.textContent = 'Submit a rating and optional text. This is stored on OurMarketplace (same reviews as on the hub site).';
+            form.style.display = 'block';
+            if (submitBound) {
+                return;
+            }
+            submitBound = true;
+            form.addEventListener('submit', function (ev) {
+                ev.preventDefault();
+                msg.textContent = '';
+                msg.style.color = '';
+                var btn = document.getElementById('mp-review-submit');
+                var rating = parseInt(document.getElementById('mp-review-rating').value, 10);
+                var text = document.getElementById('mp-review-text').value;
+                if (btn) {
+                    btn.disabled = true;
+                }
+                KGMarketplace.submitReview(productId, rating, text).then(function () {
+                    msg.textContent = 'Thank you! Your review was saved. Refreshing…';
+                    msg.style.color = 'var(--color-primary)';
+                    setTimeout(function () { location.reload(); }, 900);
+                }).catch(function (err) {
+                    msg.textContent = (err && err.message) ? err.message : 'Could not submit review.';
+                    msg.style.color = '#b00020';
+                }).finally(function () {
+                    if (btn) {
+                        btn.disabled = false;
+                    }
+                });
+            });
+        });
+    }
+
+    setupMpReviewForm();
 
     var bookWrap = document.getElementById('mp-detail-book-wrap');
     var bookBtn = document.getElementById('mp-detail-book-btn');
