@@ -1,18 +1,9 @@
 product_id,category,name,price,stock,rating
-1,Makeup,Matte Liquid Foundation,850,50,4.5
-2,Makeup,Concealer Palette,600,40,4.2
-3,Makeup,Setting Powder,450,60,4.8
-4,Makeup,Waterproof Mascara,550,45,4.3
-5,Makeup,Liquid Lipstick (Ruby Red),400,100,4.6
-6,Makeup,Eyeshadow Palette (Nude),1200,30,4.7
-7,Hair Care,Keratin Smooth Shampoo,650,40,4.4
-8,Hair Care,Argan Oil Hair Serum,750,35,4.5
-9,Hair Care,Heat Protection Spray,500,25,4.1
-10,Skin Care,Vitamin C Face Wash,350,80,4.6
-11,Skin Care,Hydrating Moisturizer,550,60,4.3
-12,Skin Care,Sunscreen SPF 50,450,70,4.7
-13,Skin Care,Rose Water Toner,200,100,4.2
-14,Skin Care,Under Eye Cream,400,40,4.5
-15,Nail Care,Base Coat Polish,250,50,4.1
-16,Nail Care,Top Coat Polish,250,50,4.3
-17,Nail Care,Nail Polish Remover,150,80,4.4
+82,Skin Care,Vitamin C Face Wash,3.50,80,4.6
+83,Skin Care,Hydrating Moisturizer,5.50,60,4.3
+84,Skin Care,Sunscreen SPF 50,4.50,70,4.7
+85,Skin Care,Rose Water Toner,2.00,100,4.2
+86,Skin Care,Under Eye Cream,4.00,40,4.5
+87,Nail Care,Base Coat Polish,2.50,50,4.1
+88,Nail Care,Top Coat Polish,2.50,50,4.3
+89,Nail Care,Nail Polish Remover,1.50,80,4.4
