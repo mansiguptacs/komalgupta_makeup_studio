@@ -54,6 +54,27 @@ if (strpos($scriptName, '/secure/') !== false || strpos($scriptName, '/sso/') !=
     <script>
     (function () {
         try { localStorage.setItem('marketplace_token', <?php echo json_encode($mpTok); ?>); } catch (e) {}
+        if (typeof KGMarketplace !== 'undefined' && KGMarketplace.resetAuthCache) {
+            KGMarketplace.resetAuthCache();
+        }
+    })();
+    </script>
+    <?php } ?>
+    <?php
+    if ($isUserLoggedIn && !empty($_SESSION['marketplace_access_token']) && is_string($_SESSION['marketplace_access_token'])) {
+        $mpTokPersist = $_SESSION['marketplace_access_token'];
+        ?>
+    <script>
+    (function () {
+        try {
+            var t = <?php echo json_encode($mpTokPersist); ?>;
+            if (t) {
+                localStorage.setItem('marketplace_token', t);
+                if (typeof KGMarketplace !== 'undefined' && KGMarketplace.resetAuthCache) {
+                    KGMarketplace.resetAuthCache();
+                }
+            }
+        } catch (e) {}
     })();
     </script>
     <?php } ?>

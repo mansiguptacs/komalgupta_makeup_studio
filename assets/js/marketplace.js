@@ -72,12 +72,14 @@ var KGMarketplace = (function () {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + token,
+                'X-Marketplace-Token': token
             },
             body: JSON.stringify({
                 product_id: rid,
                 rating: stars,
-                review_text: (reviewText == null ? '' : String(reviewText)).trim()
+                review_text: (reviewText == null ? '' : String(reviewText)).trim(),
+                access_token: token
             })
         }).then(function (r) {
             if (!r.ok) {
@@ -92,7 +94,10 @@ var KGMarketplace = (function () {
         var token = localStorage.getItem(TOKEN_KEY);
         if (!token) return Promise.resolve(null);
         return fetchJSON(API_BASE + '/verify.php', {
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'X-Marketplace-Token': token
+            }
         }).then(function (r) {
             if (r.ok && r.data && r.data.logged_in) {
                 return r.data.user;
@@ -107,6 +112,12 @@ var KGMarketplace = (function () {
     function logout() {
         localStorage.removeItem(TOKEN_KEY);
         // Clear any in-flight/cached auth state so onAuthReady reflects the new state.
+        _authPromise = null;
+        _authUser = undefined;
+    }
+
+    /** Clear cached verify() result so the next onAuthReady() runs a fresh /api/verify.php (e.g. after syncing token from PHP session). */
+    function resetAuthCache() {
         _authPromise = null;
         _authUser = undefined;
     }
@@ -269,6 +280,7 @@ var KGMarketplace = (function () {
         submitReview: submitReview,
         verify: verify,
         logout: logout,
+        resetAuthCache: resetAuthCache,
         getToken: getToken,
         isLoggedIn: isLoggedIn,
         onAuthReady: onAuthReady,
