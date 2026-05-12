@@ -13,11 +13,11 @@ require_once __DIR__ . '/includes/header.php';
     <div class="container account-page">
         <h1>Your account</h1>
         <?php if ($isSiteUser): ?>
-            <p class="lead">Signed in as <strong><?php echo htmlspecialchars($siteUser['name']); ?></strong> (<?php echo htmlspecialchars($siteUser['email']); ?>).</p>
+            <p class="lead" id="account-lead">Signed in as <strong><?php echo htmlspecialchars($siteUser['name']); ?></strong> (<?php echo htmlspecialchars($siteUser['email']); ?>).</p>
         <?php elseif ($isAdmin): ?>
-            <p class="lead">You are signed in as an administrator.</p>
+            <p class="lead" id="account-lead">You are signed in as an administrator.</p>
         <?php else: ?>
-            <p class="lead">Choose how you want to continue.</p>
+            <p class="lead" id="account-lead">Choose how you want to continue. A marketplace login alone is enough &mdash; you don't need a separate site account.</p>
         <?php endif; ?>
 
         <div class="account-grid">
@@ -99,19 +99,42 @@ require_once __DIR__ . '/includes/header.php';
 <script>
 (function(){
     var statusArea = document.getElementById('mp-status-area');
-    var modal = document.getElementById('mp-auth-modal');
-    var closeBtn = document.getElementById('mp-auth-close');
-    var loginForm = document.getElementById('mp-login-form');
-    var msgEl = document.getElementById('mp-auth-msg');
+    var leadEl     = document.getElementById('account-lead');
+    var modal      = document.getElementById('mp-auth-modal');
+    var closeBtn   = document.getElementById('mp-auth-close');
+    var loginForm  = document.getElementById('mp-login-form');
+    var msgEl      = document.getElementById('mp-auth-msg');
+
+    var siteUserLoggedIn = <?php echo json_encode($isSiteUser); ?>;
+    var isAdmin          = <?php echo json_encode($isAdmin); ?>;
+
+    function escapeHtml(s){
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
 
     function renderStatus(user) {
-        if (user && user.full_name) {
-            statusArea.innerHTML = '<p>Signed in to marketplace as <strong>' + user.full_name + '</strong>' + (user.email ? ' (' + user.email + ')' : '') + '.</p>'
+        if (user && (user.full_name || user.username)) {
+            statusArea.innerHTML = '<p>Signed in to marketplace as <strong>'
+                + escapeHtml(user.full_name || user.username) + '</strong>'
+                + (user.email ? ' (' + escapeHtml(user.email) + ')' : '') + '.</p>'
                 + '<button class="btn btn-secondary" id="mp-logout-btn">Marketplace Logout</button>';
             document.getElementById('mp-logout-btn').addEventListener('click', function(){
                 KGMarketplace.logout();
                 renderStatus(null);
+                // If the site session was already absent, refresh the lead too.
+                if (!siteUserLoggedIn && !isAdmin && leadEl) {
+                    leadEl.innerHTML = 'Choose how you want to continue. A marketplace login alone is enough &mdash; you don\u2019t need a separate site account.';
+                }
             });
+            // If only marketplace is in play, surface that as the primary "logged in" state.
+            if (!siteUserLoggedIn && !isAdmin && leadEl) {
+                leadEl.innerHTML = 'Signed in via marketplace as <strong>'
+                    + escapeHtml(user.full_name || user.username) + '</strong>'
+                    + (user.email ? ' (' + escapeHtml(user.email) + ')' : '') + '. '
+                    + 'No separate site account is required.';
+            }
         } else {
             statusArea.innerHTML = '<p>Connect your account to the marketplace to access shared products and reviews.</p>'
                 + '<button class="btn btn-primary" id="mp-open-login">Login to Marketplace</button>';
@@ -121,7 +144,7 @@ require_once __DIR__ . '/includes/header.php';
         }
     }
 
-    KGMarketplace.verify().then(renderStatus).catch(function(){ renderStatus(null); });
+    KGMarketplace.onAuthReady(renderStatus);
 
     if (loginForm) loginForm.addEventListener('submit', function(e){
         e.preventDefault();

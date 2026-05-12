@@ -1,8 +1,8 @@
 <?php
 /**
- * Marketplace product detail page.
- * Fetches /api/product_detail.php?id=N client-side via assets/js/marketplace.js
- * (server-side cURL is blocked by the marketplace host's anti-bot challenge).
+ * Marketplace-backed product detail (this studio's catalog).
+ * Fetches /api/product_detail.php?id=N client-side via assets/js/marketplace.js.
+ * Company "Sold by" block is omitted — this page is served on the owner's site.
  */
 $productId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($productId <= 0) {
@@ -37,13 +37,6 @@ require_once __DIR__ . '/includes/header.php';
                     <span id="mp-detail-visits" style="color:var(--color-text-muted);font-weight:400;font-size:.9rem;"></span>
                 </p>
                 <div class="product-detail-description" id="mp-detail-description"></div>
-
-                <div id="mp-detail-company" style="margin-top:1.25rem;padding:.85rem 1rem;background:var(--color-bg);border-radius:8px;display:none;">
-                    <p style="margin:0;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);">Sold by</p>
-                    <p style="margin:.2rem 0 0;font-weight:600;" id="mp-detail-company-name"></p>
-                    <p style="margin:0;font-size:.85rem;color:var(--color-text-muted);" id="mp-detail-company-category"></p>
-                    <a id="mp-detail-company-website" target="_blank" rel="noopener" style="font-size:.85rem;color:var(--color-primary);text-decoration:none;display:none;">Visit website &rarr;</a>
-                </div>
 
                 <p style="margin-top:1.5rem;display:none;" id="mp-detail-book-wrap">
                     <a id="mp-detail-book-btn" href="#" class="btn btn-primary">Book this service</a>
@@ -81,10 +74,6 @@ require_once __DIR__ . '/includes/header.php';
     var ratingEl = document.getElementById('mp-detail-rating');
     var visitsEl = document.getElementById('mp-detail-visits');
     var descEl = document.getElementById('mp-detail-description');
-    var companyBox = document.getElementById('mp-detail-company');
-    var companyNameEl = document.getElementById('mp-detail-company-name');
-    var companyCategoryEl = document.getElementById('mp-detail-company-category');
-    var companyWebsiteEl = document.getElementById('mp-detail-company-website');
     var reviewsSection = document.getElementById('mp-detail-reviews-section');
     var reviewsCountEl = document.getElementById('mp-detail-reviews-count');
     var breakdownEl = document.getElementById('mp-detail-rating-breakdown');
@@ -196,26 +185,7 @@ require_once __DIR__ . '/includes/header.php';
             ? escapeHtml(product.description).replace(/\n/g, '<br>')
             : '<em style="color:var(--color-text-muted);">No description provided.</em>';
 
-        // Company info block (requires #mp-detail-company markup in this page)
-        if (companyBox && companyNameEl && product.company_name) {
-            companyNameEl.textContent = product.company_name;
-            if (companyCategoryEl) {
-                if (product.company_category) {
-                    companyCategoryEl.textContent = product.company_category;
-                    companyCategoryEl.style.display = '';
-                } else {
-                    companyCategoryEl.style.display = 'none';
-                }
-            }
-            if (companyWebsiteEl && product.company_website) {
-                companyWebsiteEl.href = product.company_website;
-                companyWebsiteEl.style.display = 'inline-block';
-                companyWebsiteEl.style.marginTop = '.35rem';
-            } else if (companyWebsiteEl) {
-                companyWebsiteEl.style.display = 'none';
-            }
-            companyBox.style.display = '';
-        }
+        // "Sold by" company block omitted — visitors are already on this studio's site.
 
         // "Book this service" button — only for the Services category
         if (product.category && String(product.category).toLowerCase() === 'services') {

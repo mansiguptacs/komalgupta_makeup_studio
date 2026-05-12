@@ -74,21 +74,23 @@ require_once __DIR__ . '/includes/header.php';
             <div class="message error"><p><?php echo htmlspecialchars($bookingError); ?></p></div>
         <?php endif; ?>
 
-        <?php if (!kg_site_user_is_logged_in()): ?>
-            <div class="message error">
-                Please <a href="user_login.php">login</a> to book and track appointments.
+        <!--
+          Unified login status. Either site session OR a verified marketplace
+          token counts as "logged in" — the user shouldn't have to do both.
+          PHP sets the initial state for the site session; JS upgrades to the
+          "marketplace" state once verify() resolves (or shows the dual-prompt
+          if neither is present).
+        -->
+        <?php if (kg_site_user_is_logged_in()): ?>
+            <div id="auth-status" class="message success" data-state="site">
+                You are logged in as <strong><?php echo htmlspecialchars((string)(kg_site_user()['name'] ?? '')); ?></strong>.
+                Use your <a href="user_dashboard.php">dashboard</a> for booking history.
             </div>
         <?php else: ?>
-            <div class="message success">
-                You are logged in. Use your <a href="user_dashboard.php">dashboard</a> for booking and history.
+            <div id="auth-status" class="message" data-state="checking" style="background:var(--color-surface);border:1px solid var(--color-border);">
+                Checking your login status&hellip;
             </div>
         <?php endif; ?>
-
-        <!-- Marketplace banner - populated client-side -->
-        <div id="mp-banner" style="display:none;margin:1rem 0;padding:.85rem 1rem;background:var(--color-surface);border:1px solid var(--color-border);border-radius:10px;">
-            <p id="mp-banner-text" style="margin:0;"></p>
-            <button type="button" id="mp-banner-action" class="btn btn-secondary" style="margin-top:.5rem;padding:.35rem .9rem;font-size:.85rem;display:none;">Login to Marketplace</button>
-        </div>
 
         <p>Fill in your details. We will get back to you to confirm your slot at <strong><?php echo htmlspecialchars($studio_location); ?></strong>.</p>
 
@@ -151,13 +153,9 @@ require_once __DIR__ . '/includes/header.php';
 (function(){
     if (typeof KGMarketplace === 'undefined') return;
 
-    // Only show the marketplace banner when the visitor is logged into *this* site.
-    // Otherwise it clashes with the "Please log in to book and track appointments" notice.
     var siteUserLoggedIn = <?php echo json_encode(kg_site_user_is_logged_in()); ?>;
 
-    var banner       = document.getElementById('mp-banner');
-    var bannerText   = document.getElementById('mp-banner-text');
-    var bannerAction = document.getElementById('mp-banner-action');
+    var statusEl     = document.getElementById('auth-status');
     var nameEl       = document.getElementById('name');
     var emailEl      = document.getElementById('email');
     var mpUserIdEl   = document.getElementById('mp-user-id');
@@ -167,40 +165,70 @@ require_once __DIR__ . '/includes/header.php';
     var loginForm    = document.getElementById('mp-login-form');
     var authMsg      = document.getElementById('mp-auth-msg');
 
-    function applyMpUser(user) {
-        // Always sync hidden fields + optional pre-fill when we have a marketplace session
+    function escapeHtml(s){
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function setMpHiddenFields(user){
         if (user) {
-            if (!nameEl.value && (user.full_name || user.username)) nameEl.value = user.full_name || user.username;
-            if (!emailEl.value && user.email) emailEl.value = user.email;
             mpUserIdEl.value   = user.id != null ? user.id : '';
             mpUsernameEl.value = user.username || '';
         } else {
-            mpUserIdEl.value   = '';
+            mpUserIdEl.value = '';
             mpUsernameEl.value = '';
         }
+    }
 
-        if (!siteUserLoggedIn) {
-            if (banner) banner.style.display = 'none';
+    function prefillFromMp(user){
+        if (!user) return;
+        if (!nameEl.value && (user.full_name || user.username)) nameEl.value = user.full_name || user.username;
+        if (!emailEl.value && user.email) emailEl.value = user.email;
+    }
+
+    function renderStatus(user){
+        // Site session always wins over marketplace for the badge — the PHP
+        // already rendered the green "site" message in that case, so just
+        // wire up the hidden fields and prefill if marketplace is also live.
+        if (siteUserLoggedIn) {
+            setMpHiddenFields(user);
+            prefillFromMp(user);
             return;
         }
 
         if (user) {
-            bannerText.innerHTML = 'Logged in to marketplace as <strong>' + (user.full_name || user.username) + '</strong>. Name and email pre-filled.';
-            bannerAction.style.display = 'none';
-            banner.style.display = '';
+            // Marketplace login is sufficient; treat as logged in.
+            statusEl.className = 'message success';
+            statusEl.setAttribute('data-state', 'marketplace');
+            statusEl.innerHTML = 'You are logged in via marketplace as <strong>'
+                + escapeHtml(user.full_name || user.username) + '</strong>. '
+                + 'Your booking will be linked to that account.';
+            setMpHiddenFields(user);
+            prefillFromMp(user);
         } else {
-            bannerText.innerHTML = 'Have a marketplace account? Login to auto-fill your name and email.';
-            bannerAction.textContent = 'Login to Marketplace';
-            bannerAction.style.display = 'inline-block';
-            banner.style.display = '';
+            // Neither auth — offer both options in one prompt.
+            statusEl.className = 'message';
+            statusEl.style.background = 'var(--color-surface)';
+            statusEl.style.border = '1px solid var(--color-border)';
+            statusEl.setAttribute('data-state', 'anonymous');
+            statusEl.innerHTML =
+                '<p style="margin:0 0 .5rem;">Optional: log in to track your bookings later. '
+                + 'Either login below works \u2014 you only need one.</p>'
+                + '<button type="button" id="auth-mp-login" class="btn btn-primary" style="padding:.35rem .9rem;font-size:.85rem;margin-right:.5rem;">Login with Marketplace</button>'
+                + '<a class="btn btn-secondary" style="padding:.35rem .9rem;font-size:.85rem;" href="user_login.php">Login with site account</a>'
+                + ' <span style="color:var(--color-text-muted);font-size:.85rem;margin-left:.5rem;">'
+                + 'or <a href="user_register.php">create a site account</a></span>';
+            setMpHiddenFields(null);
+            var mpBtn = document.getElementById('auth-mp-login');
+            if (mpBtn) mpBtn.addEventListener('click', function(){ modal.style.display = 'block'; });
         }
     }
 
-    KGMarketplace.verify().then(applyMpUser).catch(function(){ applyMpUser(null); });
+    KGMarketplace.onAuthReady(renderStatus);
 
-    if (bannerAction) bannerAction.addEventListener('click', function(){ modal.style.display = 'block'; });
-    if (closeBtn)     closeBtn.addEventListener('click', function(){ modal.style.display = 'none'; });
-    if (modal)        modal.addEventListener('click', function(e){ if (e.target === modal) modal.style.display = 'none'; });
+    if (closeBtn) closeBtn.addEventListener('click', function(){ modal.style.display = 'none'; });
+    if (modal)    modal.addEventListener('click', function(e){ if (e.target === modal) modal.style.display = 'none'; });
 
     if (loginForm) loginForm.addEventListener('submit', function(e){
         e.preventDefault();
@@ -212,7 +240,7 @@ require_once __DIR__ . '/includes/header.php';
                 authMsg.className = 'message success';
                 authMsg.textContent = 'Logged in!';
                 authMsg.style.display = 'block';
-                applyMpUser(r.user);
+                renderStatus(r.user);
                 setTimeout(function(){ modal.style.display = 'none'; }, 600);
             } else {
                 authMsg.className = 'message error';

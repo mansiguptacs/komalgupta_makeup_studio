@@ -100,6 +100,9 @@ var KGMarketplace = (function () {
 
     function logout() {
         localStorage.removeItem(TOKEN_KEY);
+        // Clear any in-flight/cached auth state so onAuthReady reflects the new state.
+        _authPromise = null;
+        _authUser = undefined;
     }
 
     function getToken() {
@@ -108,6 +111,32 @@ var KGMarketplace = (function () {
 
     function isLoggedIn() {
         return !!localStorage.getItem(TOKEN_KEY);
+    }
+
+    // -----------------------------------------------------------------------
+    // Cached auth readiness. Every page can call onAuthReady(cb) without each
+    // one firing its own /api/verify.php request. The first caller starts the
+    // verify; subsequent callers reuse the same promise and resolved value.
+    // -----------------------------------------------------------------------
+    var _authPromise = null;
+    var _authUser = undefined; // undefined = unresolved, null = anonymous, object = user
+
+    function onAuthReady(cb) {
+        if (!_authPromise) {
+            _authPromise = verify().then(function (user) {
+                _authUser = user || null;
+                return _authUser;
+            }).catch(function () {
+                _authUser = null;
+                return null;
+            });
+        }
+        if (typeof cb === 'function') _authPromise.then(cb);
+        return _authPromise;
+    }
+
+    function getEffectiveUser() {
+        return _authUser === undefined ? null : _authUser;
     }
 
     // -----------------------------------------------------------------------
@@ -237,6 +266,8 @@ var KGMarketplace = (function () {
         logout: logout,
         getToken: getToken,
         isLoggedIn: isLoggedIn,
+        onAuthReady: onAuthReady,
+        getEffectiveUser: getEffectiveUser,
         trackVisit: trackVisit,
         getTopProducts: getTopProducts,
         recordVisit: recordVisit,

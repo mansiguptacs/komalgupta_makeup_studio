@@ -38,7 +38,10 @@ $base = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/secure/') !== false) ? '../' : 
     <link rel="stylesheet" href="<?php echo $base; ?>assets/css/style.css?v=<?php echo $cssVer; ?>">
     <script src="<?php echo $base; ?>assets/js/marketplace.js?v=<?php echo $mpJsVer; ?>"></script>
 </head>
-<body>
+<body
+    data-site-user-loggedin="<?php echo $isUserLoggedIn ? '1' : '0'; ?>"
+    data-site-user-name="<?php echo htmlspecialchars((string)(kg_site_user()['name'] ?? '')); ?>"
+    data-is-admin="<?php echo $isAdmin ? '1' : '0'; ?>">
     <header class="site-header">
         <div class="container header-inner">
             <a href="<?php echo $base; ?>index.php" class="logo">
@@ -74,4 +77,25 @@ $base = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/secure/') !== false) ? '../' : 
             </a>
         </div>
     </header>
+
+    <script>
+    (function () {
+        if (typeof KGMarketplace === 'undefined' || !KGMarketplace.onAuthReady) return;
+        var body = document.body;
+        var siteLoggedIn = body.getAttribute('data-site-user-loggedin') === '1';
+        var isAdmin     = body.getAttribute('data-is-admin') === '1';
+        // If the site already has a session (or admin), don't override.
+        if (siteLoggedIn || isAdmin) return;
+
+        KGMarketplace.onAuthReady(function (user) {
+            if (!user) return;
+            var navText = document.querySelector('.profile-nav-link .profile-nav-text');
+            if (navText) navText.textContent = user.full_name || user.username || 'My Account';
+            // Hint for any page-level scripts that want to react.
+            body.setAttribute('data-mp-user-loggedin', '1');
+            body.setAttribute('data-mp-user-name', user.full_name || user.username || '');
+        });
+    })();
+    </script>
+
     <main class="main-content">
