@@ -16,7 +16,7 @@ function kg_site_user_login($userRow) {
         'id' => (int)$userRow['id'],
         'first_name' => (string)($userRow['first_name'] ?? ''),
         'last_name' => (string)($userRow['last_name'] ?? ''),
-        'name' => trim((string)($userRow['first_name'] ?? '') . ' ' . (string)($userRow['last_name'] ?? '')),
+        'name' => trim(trim((string)($userRow['first_name'] ?? '') . ' ' . (string)($userRow['last_name'] ?? ''))),
         'email' => (string)$userRow['email'],
     ];
 }
